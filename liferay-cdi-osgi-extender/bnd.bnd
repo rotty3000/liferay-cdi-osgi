@@ -1,0 +1,1 @@
+Provide-Capability: osgi.extender; osgi.extender="osgi.cdi"; version:Version="1.0"
