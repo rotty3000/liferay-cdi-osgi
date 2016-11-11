@@ -22,6 +22,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
+import org.osgi.framework.wiring.BundleWiring;
 
 
 /**
@@ -36,13 +37,17 @@ public class BundleDeploymentArchive implements BeanDeploymentArchive {
 	private String id;
 	private ServiceRegistry services;
 
-	public BundleDeploymentArchive(String id, Collection<String> beanClasses, BeansXml beansXml) {
+	public BundleDeploymentArchive(
+		BundleWiring bundleWiring, String id, Collection<String> beanClasses, BeansXml beansXml) {
+		
 		this.id = id;
 		this.beanClasses = beanClasses;
 		this.beanDeploymentArchives = Collections.emptyList();
 		this.beansXml = beansXml;
 		this.ejbs = Collections.emptyList();
 		this.services = new SimpleServiceRegistry();
+
+		services.add(ResourceLoader.class, new BundleResourcesLoader(bundleWiring));
 	}
 
 	@Override

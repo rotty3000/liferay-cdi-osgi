@@ -19,7 +19,6 @@ import java.util.Set;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.api.Service;
 
-
 /**
  * @author  Neil Griffin
  */

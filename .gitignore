@@ -1,6 +1,8 @@
 .classpath
 .idea
+.metadata
 .project
+.recommenders
 .settings
 faces-config.pageflow
 navigation-rule.NavData
@@ -11,3 +13,4 @@ target
 *.iml
 *.ipr
 *.iws
+/*/generated

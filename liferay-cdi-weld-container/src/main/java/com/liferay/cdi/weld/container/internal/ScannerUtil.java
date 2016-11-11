@@ -15,70 +15,45 @@ package com.liferay.cdi.weld.container.internal;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.felix.utils.log.Logger;
-
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
-
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
  * @author  Neil Griffin
  */
 public class ScannerUtil {
 
-	private static final String[] BEAN_DESCRIPTOR_PATHS = new String[] { "META-INF/beans.xml", "WEB-INF/beans.xml" };
+	private static final String[] BEAN_DESCRIPTOR_PATHS = new String[] {"META-INF/beans.xml", "WEB-INF/beans.xml"};
 
-	public static ScanResults scan(Bundle bundle, Logger logger) {
-
+	public static ScanResults scan(BundleWiring bundleWiring) {
 		List<URL> beanDescriptorURLs = new ArrayList<URL>();
 
 		for (String descriptorPath : BEAN_DESCRIPTOR_PATHS) {
-
-			URL beanDescriptorURL = bundle.getEntry(descriptorPath);
+			URL beanDescriptorURL = bundleWiring.getBundle().getResource(descriptorPath);
 
 			if (beanDescriptorURL != null) {
 				beanDescriptorURLs.add(beanDescriptorURL);
-				logger.log(Logger.LOG_DEBUG, "Found beanDescriptorURL=" + beanDescriptorURL);
 			}
 		}
 
 		List<String> beanClasses = new ArrayList<String>();
-		String[] classPaths = new String[] { "/" };
-		String bundleClassPath = bundle.getHeaders().get(Constants.BUNDLE_CLASSPATH);
 
-		if (bundleClassPath != null) {
-			classPaths = bundleClassPath.split(",");
-		}
+		Collection<String> resources = bundleWiring.listResources(
+			"/", "*.class", BundleWiring.LISTRESOURCES_LOCAL | BundleWiring.LISTRESOURCES_RECURSE);
 
-		for (String classPath : classPaths) {
-
-			if (classPath.endsWith(".jar")) {
-				logger.log(Logger.LOG_DEBUG, "Skipping scanning classpath of jar=" + classPath);
-			}
-			else {
-				Enumeration<URL> classPathURLs = bundle.findEntries(classPath, "*.class", true);
-
-				while ((classPathURLs != null) && classPathURLs.hasMoreElements()) {
-					URL classPathURL = classPathURLs.nextElement();
-					String file = classPathURL.getFile();
-					int pos = file.indexOf(classPath);
-					String fqcn = file.substring(pos + classPath.length());
-
-					if (fqcn.startsWith("/")) {
-						fqcn = fqcn.substring(1);
-					}
-
-					fqcn = fqcn.replace('/', '.');
-					fqcn = fqcn.replace(".class", "");
-					logger.log(Logger.LOG_DEBUG, "Found fqcn=" + fqcn);
-					beanClasses.add(fqcn);
-				}
+		if (resources != null) {
+			for (String resource : resources) {
+				resource = resource.replace('/', '.');
+				resource = resource.replace(".class", "");
+	
+				beanClasses.add(resource);
 			}
 		}
 
 		return new ScanResults(beanClasses, beanDescriptorURLs);
 	}
+
 }

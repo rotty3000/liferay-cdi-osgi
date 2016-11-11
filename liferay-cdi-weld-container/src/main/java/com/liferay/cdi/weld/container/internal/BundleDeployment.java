@@ -62,4 +62,5 @@ public class BundleDeployment implements Deployment {
 	public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> aClass) {
 		return beanDeploymentArchive;
 	}
+
 }

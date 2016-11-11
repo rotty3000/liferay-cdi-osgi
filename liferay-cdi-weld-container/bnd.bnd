@@ -1,3 +1,2 @@
--includeresource:\
-	@org.apache.felix.utils-[0-9]*.jar!/org/apache/felix/utils/extender/*,\
-	@org.apache.felix.utils-[0-9]*.jar!/org/apache/felix/utils/log/*
+Bundle-Activator: com.liferay.cdi.weld.container.internal.Activator
+Provide-Capability: osgi.extender; osgi.extender="osgi.cdi"; version:Version="1.0"

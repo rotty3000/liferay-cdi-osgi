@@ -16,7 +16,6 @@ package com.liferay.cdi.weld.container.internal;
 import java.net.URL;
 import java.util.Collection;
 
-
 /**
  * @author  Neil Griffin
  */
