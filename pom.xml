@@ -50,6 +50,8 @@
         <module>liferay-cdi-osgi-api</module>
         <module>liferay-cdi-portable-extension</module>
         <module>liferay-cdi-weld-container</module>
+        <module>liferay-cdi-weld-container-example</module>
+        <module>liferay-cdi-weld-container-example-run</module>
         <module>liferay-cdi-weld-container-itests</module>
         <module>liferay-cdi-weld-container-itests-run</module>
         <module>liferay-cdi-weld-jsf</module>
