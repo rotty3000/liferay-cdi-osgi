@@ -28,9 +28,11 @@ import com.liferay.cdi.weld.container.internal.ctx.JNDIContext;
 
 public class PublishPhase {
 
-	public PublishPhase(Bootstrap bootstrap, Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
-		_bootstrap = bootstrap;
+	public PublishPhase(
+		Bundle bundle, Bootstrap bootstrap, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
+
 		_bundle = bundle;
+		_bootstrap = bootstrap;
 		_cdiHelper = cdiHelper;
 		_beanDeploymentArchive = beanDeploymentArchive;
 	}

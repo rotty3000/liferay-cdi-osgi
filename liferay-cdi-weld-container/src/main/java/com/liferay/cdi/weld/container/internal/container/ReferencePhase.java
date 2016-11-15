@@ -38,19 +38,20 @@ import com.liferay.cdi.weld.container.internal.SimpleEnvironment;
 public class ReferencePhase {
 
 	public ReferencePhase(
-		BundleContext bundleContext, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive,
+		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive,
 		Map<ServiceReference<Extension>, Metadata<Extension>> extensions) {
 
-		_bundleContext = bundleContext;
+		_bundle = bundle;
 		_cdiHelper = cdiHelper;
-		_bundle = bundleContext.getBundle();
-		_bundleWiring = _bundle.adapt(BundleWiring.class);
 		_beanDeploymentArchive = beanDeploymentArchive;
 		_extensions = extensions;
 
+		_bundleContext = _bundle.getBundleContext();
+		_bundleWiring = _bundle.adapt(BundleWiring.class);
+
 		_weldBootstrap = new WeldBootstrap();
 
-		_publishPhase = new PublishPhase(_weldBootstrap, _bundle, _cdiHelper, _beanDeploymentArchive);
+		_publishPhase = new PublishPhase(_bundle, _weldBootstrap, _cdiHelper, _beanDeploymentArchive);
 	}
 
 	public void close() {

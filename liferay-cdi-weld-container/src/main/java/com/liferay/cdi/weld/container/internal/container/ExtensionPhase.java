@@ -31,16 +31,16 @@ import com.liferay.cdi.weld.container.internal.FilterBuilder;
 public class ExtensionPhase {
 
 	public ExtensionPhase(
-		BundleContext bundleContext, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
+		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
 
-		_bundleContext = bundleContext;
+		_bundle = bundle;
 		_cdiHelper = cdiHelper;
 		_beanDeploymentArchive = beanDeploymentArchive;
 
-		_bundle = bundleContext.getBundle();
+		_bundleContext = _bundle.getBundleContext();
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
 
-		_referencePhase = new ReferencePhase(_bundleContext, _cdiHelper, _beanDeploymentArchive, _extensions);
+		_referencePhase = new ReferencePhase(_bundle, _cdiHelper, _beanDeploymentArchive, _extensions);
 	}
 
 	public void close() {

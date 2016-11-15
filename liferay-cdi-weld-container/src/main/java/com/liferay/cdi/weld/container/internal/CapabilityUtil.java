@@ -14,12 +14,12 @@
 package com.liferay.cdi.weld.container.internal;
 
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
-
 import org.osgi.service.cdi.Constants;
 
 /**
@@ -29,14 +29,17 @@ public class CapabilityUtil {
 
 	public static boolean requiresCdiExtender(Bundle bundle) {
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
-		List<BundleWire> requiredBundleWires = bundleWiring.getRequiredWires(Constants.CDI_EXTENSION_CAPABILITY);
+		List<BundleWire> requiredBundleWires = bundleWiring.getRequiredWires("osgi.extender");
 
-		if (requiredBundleWires != null) {
-			for (BundleWire bundleWire : requiredBundleWires) {
-				BundleWiring providerWiring = bundleWire.getProviderWiring();
-				Bundle providerWiringBundle = providerWiring.getBundle();
+		for (BundleWire bundleWire : requiredBundleWires) {
+			Map<String, Object> attributes = bundleWire.getCapability().getAttributes();
 
-				if (providerWiringBundle.equals(thisBundle)) {
+			if (attributes.containsKey("osgi.extender") &&
+				attributes.get("osgi.extender").equals(Constants.CDI_EXTENDER)) {
+
+				Bundle providerWiringBundle = bundleWire.getProviderWiring().getBundle();
+
+				if (providerWiringBundle.equals(extenderBundle)) {
 					return true;
 				}
 			}
@@ -45,6 +48,6 @@ public class CapabilityUtil {
 		return false;
 	}
 
-	private static final Bundle thisBundle = FrameworkUtil.getBundle(CapabilityUtil.class);
+	private static final Bundle extenderBundle = FrameworkUtil.getBundle(CapabilityUtil.class);
 
 }

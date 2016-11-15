@@ -40,7 +40,7 @@ public class WeldCdiContainer {
 		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
 			bundleWiring, deploymentArchiveId, beanClasses, beansXml);
 
-		_extensionPhase = new ExtensionPhase(bundle.getBundleContext(), cdiHelper, beanDeploymentArchive);
+		_extensionPhase = new ExtensionPhase(bundle, cdiHelper, beanDeploymentArchive);
 	}
 
 	public void close() {
