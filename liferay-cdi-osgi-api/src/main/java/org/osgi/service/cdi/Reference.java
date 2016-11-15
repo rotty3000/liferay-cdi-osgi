@@ -22,13 +22,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
 
 /**
- * Annotation used to observe ServiceEvent events whenever a matching service injected via @Reference is unregistered in
- * the OSGi registry.
+ * Annotation used to annotate a CDI injection point and inform the CDI extender that the injection should be done by a
+ * service grabbed from the OSGi registry.
  */
-@Target(value = ElementType.PARAMETER)
+@Qualifier
+@Target(value = { ElementType.FIELD, ElementType.PARAMETER, ElementType.CONSTRUCTOR })
 @Retention(value = RetentionPolicy.RUNTIME)
 @Documented
-public @interface ServiceRemoved {
+public @interface Reference {
+
+	/**
+	 * The target filter for the reference.
+	 *
+	 * @see "The target attribute of the reference element of a Component Description."
+	 */
+	String value() default "";
 }

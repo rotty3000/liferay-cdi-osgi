@@ -14,40 +14,34 @@
 
 package com.liferay.cdi.weld.container.internal;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
-import javax.naming.spi.ObjectFactory;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.cdi.CdiContainer;
-import org.osgi.service.jndi.JNDIConstants;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.cdi.CdiListener;
 import org.osgi.util.tracker.BundleTracker;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-/**
- * @author Neil Griffin
- * @author Raymond Augé
- */
+import com.liferay.cdi.weld.container.internal.container.WeldCdiContainer;
+
 public class Activator implements BundleActivator {
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public void start(BundleContext bundleContext) throws Exception {
-		Dictionary<String, Object> properties = new Hashtable<>();
+		_bundleContext = bundleContext;
 
-		// TODO For now!
-		properties.put(Constants.SERVICE_VENDOR, "Liferay, Inc.");
-		properties.put(JNDIConstants.JNDI_URLSCHEME, "java");
+		_cdiListenerTracker = new ServiceTracker<>(_bundleContext, CdiListener.class, new CdiListenerCustomizer());
 
-		_serviceRegistration = bundleContext.registerService(
-			new String[] {CdiContainer.class.getName(), ObjectFactory.class.getName()}, 
-			new CdiContainerServiceFactory(), properties);
+		_cdiListenerTracker.open();
 
-		_bundleTracker = new BundleTracker<CdiContainer>(bundleContext, Bundle.ACTIVE, new CdiBundleCustomizer());
+		_bundleTracker = new BundleTracker<WeldCdiContainer>(
+			_bundleContext, Bundle.ACTIVE | Bundle.STARTING,
+			new CdiBundleCustomizer(_bundleContext.getBundle(), _listeners));
 
 		_bundleTracker.open();
 	}
@@ -55,13 +49,35 @@ public class Activator implements BundleActivator {
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		_bundleTracker.close();
-
-		_serviceRegistration.unregister();
+		_cdiListenerTracker.close();
 	}
 
-	private BundleTracker<CdiContainer> _bundleTracker;
+	private BundleContext _bundleContext;
+	private BundleTracker<WeldCdiContainer> _bundleTracker;
+	private ServiceTracker<CdiListener, CdiListener> _cdiListenerTracker;
+	private Map<ServiceReference<CdiListener>, CdiListener> _listeners =
+		new ConcurrentSkipListMap<>(Comparator.reverseOrder());
 
-	@SuppressWarnings("rawtypes")
-	private ServiceRegistration _serviceRegistration;
-	
+	private class CdiListenerCustomizer implements ServiceTrackerCustomizer<CdiListener, CdiListener> {
+
+		@Override
+		public CdiListener addingService(ServiceReference<CdiListener> reference) {
+			CdiListener cdiListener = _bundleContext.getService(reference);
+			_listeners.put(reference, cdiListener);
+			return cdiListener;
+		}
+
+		@Override
+		public void modifiedService(ServiceReference<CdiListener> reference, CdiListener service) {
+		}
+
+		@Override
+		public void removedService(ServiceReference<CdiListener> reference, CdiListener service) {
+			_listeners.remove(reference);
+			_bundleContext.ungetService(reference);
+		}
+
+
+	}
+
 }

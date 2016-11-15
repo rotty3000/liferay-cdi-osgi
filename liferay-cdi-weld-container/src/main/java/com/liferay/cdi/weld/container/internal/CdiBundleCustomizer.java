@@ -13,37 +13,50 @@
  */
 package com.liferay.cdi.weld.container.internal;
 
+import java.util.Map;
+
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.cdi.CdiContainer;
+import org.osgi.service.cdi.CdiListener;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
-/**
- * @author  Neil Griffin
- */
-public class CdiBundleCustomizer implements BundleTrackerCustomizer<CdiContainer> {
+import com.liferay.cdi.weld.container.internal.container.WeldCdiContainer;
+
+public class CdiBundleCustomizer implements BundleTrackerCustomizer<WeldCdiContainer> {
+
+	public CdiBundleCustomizer(Bundle extenderBundle, Map<ServiceReference<CdiListener>, CdiListener> listeners) {
+		_extenderBundle = extenderBundle;
+		_listeners = listeners;
+	}
 
 	@Override
-	public CdiContainer addingBundle(Bundle bundle, BundleEvent bundleEvent) {
+	public WeldCdiContainer addingBundle(Bundle bundle, BundleEvent bundleEvent) {
 		if (!CapabilityUtil.requiresCdiExtender(bundle)) {
 			return null;
 		}
 
-		BundleContext currentBundleContext = bundle.getBundleContext();
+		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners);
 
-		ServiceReference<CdiContainer> reference = currentBundleContext.getServiceReference(CdiContainer.class);
+		WeldCdiContainer weldCdiContainer = new WeldCdiContainer(bundle, cdiHelper);
 
-		return currentBundleContext.getService(reference);
+		weldCdiContainer.open();
+
+		return weldCdiContainer;
 	}
 
 	@Override
-	public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, CdiContainer cdiContainer) {
+	public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
+		removedBundle(bundle, bundleEvent, weldCdiContainer);
+		addingBundle(bundle, bundleEvent);
 	}
 
 	@Override
-	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, CdiContainer cdiContainer) {
+	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
+		weldCdiContainer.close();
 	}
+
+	private final Bundle _extenderBundle;
+	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;
 
 }

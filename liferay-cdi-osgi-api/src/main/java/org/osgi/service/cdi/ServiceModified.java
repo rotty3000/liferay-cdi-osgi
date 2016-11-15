@@ -16,12 +16,19 @@
 
 package org.osgi.service.cdi;
 
-import javax.enterprise.inject.spi.BeanManager;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
- * A CdiContainer object is registered by the CDI extender in the OSGi registry for each managed CDI bundle.
+ * Annotation used to observe ServiceEvent events whenever a matching service modified via @Reference is unregistered in
+ * the OSGi registry.
  */
-public interface CdiContainer {
-
-	public BeanManager getBeanManager();
+@Target(value = ElementType.PARAMETER)
+@Retention(value = RetentionPolicy.RUNTIME)
+@Documented
+public @interface ServiceModified {
 }

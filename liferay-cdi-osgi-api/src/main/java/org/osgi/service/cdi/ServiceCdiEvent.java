@@ -16,12 +16,28 @@
 
 package org.osgi.service.cdi;
 
-import javax.enterprise.inject.spi.BeanManager;
+import org.osgi.framework.ServiceReference;
 
 /**
- * A CdiContainer object is registered by the CDI extender in the OSGi registry for each managed CDI bundle.
+ * A holder for observer methods to receive both the ServiceReferences and the service.
  */
-public interface CdiContainer {
+public class ServiceCdiEvent<T> {
 
-	public BeanManager getBeanManager();
+	private final ServiceReference<T> reference;
+	
+	private final T service;
+	
+	public ServiceCdiEvent(ServiceReference<T> reference, T service) {
+		this.reference = reference;
+		this.service = service;
+	}
+	
+	public ServiceReference<T> getReference() {
+		return reference;
+	}
+	
+	public T getService() {
+		return service;
+	}
+	
 }

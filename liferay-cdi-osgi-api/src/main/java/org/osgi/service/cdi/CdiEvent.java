@@ -1,25 +1,25 @@
-/**
- * Copyright (c) 2000-2016 Liferay, Inc. All rights reserved.
+/*
+ * Copyright (c) OSGi Alliance (2011). All Rights Reserved.
  *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.osgi.service.cdi;
 
 import org.osgi.framework.Bundle;
 
-
 /**
  * CdiEvents are sent by the cdi extender and received by registered CdiListener services.
- *
- * @author  Neil Griffin
  */
 public class CdiEvent {
 
@@ -27,17 +27,19 @@ public class CdiEvent {
 	public static int CREATED = 2;
 	public static int DESTROYING = 3;
 	public static int DESTROYED = 4;
-	public static int FAILURE = 5;
+	public static int WAITING_FOR_EXTENSIONS = 5;
+	public static int WAITING_FOR_SERVICES = 6;
+	public static int SATISFIED = 7;
+	public static int FAILURE = 8;
 
 	private Bundle bundle;
 	private Throwable cause;
-	private CdiEvent cdiEvent;
 	private Bundle extenderBundle;
 	private boolean replay;
 	private int type;
 
 	public CdiEvent(CdiEvent event, boolean replay) {
-		this.cdiEvent = event;
+		this(event.getType(), event.getBundle(), event.getExtenderBundle(), event.getCause());
 		this.replay = replay;
 	}
 

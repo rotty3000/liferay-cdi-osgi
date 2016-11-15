@@ -2,6 +2,7 @@ package com.liferay.cdi.weld.container.internal.ctx;
 
 import java.util.Hashtable;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
@@ -13,14 +14,12 @@ import javax.naming.OperationNotSupportedException;
 
 import org.jboss.weld.exceptions.UnsupportedOperationException;
 
-import com.liferay.cdi.weld.container.internal.WeldCdiContainer;
-
 public class JNDIContext implements Context {
-	
-	private final WeldCdiContainer container;
-	
-	public JNDIContext(WeldCdiContainer container) {
-		this.container = container;
+
+	private final BeanManager _beanManager;
+
+	public JNDIContext(BeanManager beanManager) {
+		_beanManager = beanManager;
 	}
 
 	@Override
@@ -31,10 +30,10 @@ public class JNDIContext implements Context {
 	@Override
 	public Object lookup(String name) throws NamingException {
 		if (name.length() == 0) {
-			return new JNDIContext(container);
+			return new JNDIContext(_beanManager);
 		}
 		if (name.equals("java:comp/BeanManager")) {
-			return container.getBeanManager();
+			return _beanManager;
 		}
 		throw new NamingException("Could not find " + name);
 	}

@@ -1,2 +1,6 @@
 Bundle-Activator: com.liferay.cdi.weld.container.internal.Activator
-Provide-Capability: osgi.extender; osgi.extender="osgi.cdi"; version:Version="1.0"
+Provide-Capability: \
+	osgi.extender; \
+		osgi.extender='osgi.cdi'; \
+		uses:="org.osgi.service.cdi,javax.enterprise.inject.spi"; \
+		version:Version="1.0"

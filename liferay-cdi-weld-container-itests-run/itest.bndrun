@@ -1,17 +1,17 @@
 -standalone:
 
 -plugin.integration.test = \
-  aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
-    snapshotUrls=https://oss.sonatype.org/content/repositories/osgi/; \
-    releaseUrls=https://repo1.maven.org/maven2/; \
-    pom=${.}/pom.xml; \
-    name=integration.test; \
-    location=${.}/target/cached.xml
+	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
+	snapshotUrls=https://oss.sonatype.org/content/repositories/osgi/; \
+	releaseUrls=https://repo1.maven.org/maven2/; \
+	pom=${.}/pom.xml; \
+	name=integration.test; \
+	location=${.}/target/cached.xml
 
 -runrequires: \
-    osgi.identity;filter:='(osgi.identity=com.liferay.cdi.weld.container.itests)',\
-    osgi.identity;filter:='(osgi.identity=com.liferay.cdi.weld.container)',\
-    osgi.identity;filter:='(osgi.identity=org.apache.aries.jndi.core)'
+	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.weld.container.itests)',\
+	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.weld.container)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.aries.jndi.core)'
 
 -runfw: org.eclipse.osgi;version='[3.10.100.v20150529-1857,3.10.100.v20150529-1857]'
 -runbundles: \
@@ -22,37 +22,34 @@
 	javax.enterprise.cdi-api; version='[1.2.0,1.2.1)',\
 	javax.interceptor-api; version='[1.2.0,1.2.1)',\
 	jboss-classfilewriter; version='[1.1.2,1.1.3)',\
+	log4j; version='[1.2.17,1.2.18)',\
 	org.apache.aries.jndi.api; version='[1.1.0,1.1.1)',\
 	org.apache.aries.jndi.core; version='[1.0.2,1.0.3)',\
 	org.apache.aries.util; version='[1.0.0,1.0.1)',\
-	org.apache.felix.bundlerepository; version='[1.6.0,1.6.1)',\
-	org.apache.felix.configadmin; version='[1.8.8,1.8.9)',\
-	org.apache.felix.scr; version='[2.0.2,2.0.3)',\
 	org.apache.logging.log4j.api; version='[2.7.0,2.7.1)',\
-	org.eclipse.equinox.metatype; version='[1.4.100,1.4.101)',\
 	org.glassfish.hk2.external.javax.inject; version='[2.5.0,2.5.1)',\
 	org.jboss.logging.jboss-logging; version='[3.2.1,3.2.2)',\
 	org.jboss.spec.javax.el.jboss-el-api_3.0_spec; version='[1.0.0,1.0.1)',\
 	org.jboss.weld.osgi-bundle; version='[2.4.0,2.4.1)',\
-	org.osgi.service.metatype; version='[1.3.0,1.3.1)',\
 	osgi.enroute.hamcrest.wrapper; version='[1.3.0,1.3.1)',\
 	osgi.enroute.junit.wrapper; version='[4.12.0,4.12.1)',\
-	osgi.enroute.logger.simple.provider; version='[2.0.0,2.0.1)'
+	slf4j.api; version='[1.6.1,1.6.2)',\
+	slf4j.log4j12; version='[1.6.1,1.6.2)'
 
 -runtrace: true
 
 -runee: JavaSE-1.8
 -resolve.effective: resolve, active
 
-#-runvm: -Xdebug, "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
+-runvm: -Xdebug, "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
 
 -runsystempackages.eqnx: javax.script
 -runsystemcapabilities.dflt: ${native_capability}
 -runproperties.eqnx: \
-  osgi.console.enable.builtin=false, \
-  osgi.console=11311, \
-  org.osgi.service.http.port=8080
+	osgi.console.enable.builtin=false, \
+	osgi.console=11311, \
+	org.osgi.service.http.port=8080
 -runbundles: \
-  com.liferay.cdi.weld.container.itests; version='[0.0.1,0.0.2)',\
-  osgi.enroute.hamcrest.wrapper; version='[1.3.0,1.3.1)',\
-  osgi.enroute.junit.wrapper; version='[4.12.0,4.12.1)'
+	com.liferay.cdi.weld.container.itests; version='[0.0.1,0.0.2)',\
+	osgi.enroute.hamcrest.wrapper; version='[1.3.0,1.3.1)',\
+	osgi.enroute.junit.wrapper; version='[4.12.0,4.12.1)'

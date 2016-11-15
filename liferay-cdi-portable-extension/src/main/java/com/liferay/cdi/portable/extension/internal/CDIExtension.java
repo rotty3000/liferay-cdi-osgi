@@ -20,10 +20,13 @@ import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author  Neil Griffin
  */
 @ApplicationScoped
+@Component
 public class CDIExtension implements Extension {
 
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery abd) {

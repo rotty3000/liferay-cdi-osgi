@@ -17,9 +17,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.cdi.Constants;
 
 /**
  * @author  Neil Griffin
@@ -41,15 +44,29 @@ public class ScannerUtil {
 
 		List<String> beanClasses = new ArrayList<String>();
 
-		Collection<String> resources = bundleWiring.listResources(
-			"/", "*.class", BundleWiring.LISTRESOURCES_LOCAL | BundleWiring.LISTRESOURCES_RECURSE);
+		List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.CDI_EXTENDER);
+		
+		for (BundleRequirement requirement : requirements) {
+			Map<String, Object> attributes = requirement.getAttributes();
+			if (attributes.containsKey("beans")) {
+				Object object = attributes.get("beans");
+				if (object instanceof List) {
+					beanClasses.addAll((List<String>)attributes.get("beans"));
+				}
+			}
+		}
 
-		if (resources != null) {
-			for (String resource : resources) {
-				resource = resource.replace('/', '.');
-				resource = resource.replace(".class", "");
+		if (beanClasses.isEmpty()) {
+			Collection<String> resources = bundleWiring.listResources(
+				"/", "*.class", BundleWiring.LISTRESOURCES_LOCAL | BundleWiring.LISTRESOURCES_RECURSE);
 	
-				beanClasses.add(resource);
+			if (resources != null) {
+				for (String resource : resources) {
+					resource = resource.replace('/', '.');
+					resource = resource.replace(".class", "");
+		
+					beanClasses.add(resource);
+				}
 			}
 		}
 
