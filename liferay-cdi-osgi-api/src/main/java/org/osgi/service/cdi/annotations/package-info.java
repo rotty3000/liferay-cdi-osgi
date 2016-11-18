@@ -4,4 +4,4 @@
  * API in this package.
  */
 @org.osgi.annotation.versioning.Version("0.0.1")
-package org.osgi.service.cdi;
+package org.osgi.service.cdi.annotations;

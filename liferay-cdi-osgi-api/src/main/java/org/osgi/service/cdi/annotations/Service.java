@@ -1,5 +1,5 @@
 /*
- * Copyright (c) OSGi Alliance (2011). All Rights Reserved.
+ * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.osgi.service.cdi;
+package org.osgi.service.cdi.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,13 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.inject.Qualifier;
-
 /**
- * The @Service annotation exposes a CDI bean in the OSGi registry.
+ * The @Service annotation exposes a CDI bean in the service registry.
  */
-@Qualifier
-@Target(value = { ElementType.FIELD, ElementType.TYPE, ElementType.PARAMETER, ElementType.CONSTRUCTOR })
+@Target(value = ElementType.TYPE)
 @Retention(value = RetentionPolicy.RUNTIME)
 @Documented
 public @interface Service {
@@ -44,11 +41,22 @@ public @interface Service {
 	 * If not specified, the service types for this CDI bean are all the
 	 * <i>directly</i> implemented interfaces of the class being annotated.
 	 *
+	 * <p>
+	 * If the CDI bean does not <i>directly</i> implement any interfaces the
+	 * bean class is used.
+	 *
 	 * @see "The types element of a Service Description."
 	 */
 	Class<?>[] types() default {};
 
+	/**
+	 * Properties for this Component.
+	 *
+	 * <p>
+	 * Each property is specified as an instance of {@link ServiceProperty}.
+	 *
+	 * @see "The properties element of a Service Description."
+	 */
 	ServiceProperty[] properties() default {};
-	
-	ServiceScope scope() default ServiceScope.SINGLETON;
+
 }

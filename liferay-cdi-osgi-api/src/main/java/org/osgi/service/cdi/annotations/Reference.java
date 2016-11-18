@@ -1,5 +1,5 @@
 /*
- * Copyright (c) OSGi Alliance (2011). All Rights Reserved.
+ * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.osgi.service.cdi;
+package org.osgi.service.cdi.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -26,10 +26,10 @@ import javax.inject.Qualifier;
 
 /**
  * Annotation used to annotate a CDI injection point and inform the CDI extender that the injection should be done by a
- * service grabbed from the OSGi registry.
+ * service obtained from the OSGi registry.
  */
 @Qualifier
-@Target(value = { ElementType.FIELD, ElementType.PARAMETER, ElementType.CONSTRUCTOR })
+@Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.CONSTRUCTOR })
 @Retention(value = RetentionPolicy.RUNTIME)
 @Documented
 public @interface Reference {

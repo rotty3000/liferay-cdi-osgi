@@ -1,5 +1,5 @@
 /*
- * Copyright (c) OSGi Alliance (2011). All Rights Reserved.
+ * Copyright (c) OSGi Alliance (2016). All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package org.osgi.service.cdi;
+package org.osgi.service.cdi.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 
 /**
- * Annotation used to observe ServiceEvent events whenever a matching service modified via @Reference is unregistered in
- * the OSGi registry.
+ * Annotation used to define a property that will be associated to the CDI bean registered in the OSGi registry.
  */
-@Target(value = ElementType.PARAMETER)
 @Retention(value = RetentionPolicy.RUNTIME)
-@Documented
-public @interface ServiceModified {
+public @interface ServiceProperty {
+
+	String key();
+
+	String value();
+
+	ServicePropertyTypes type() default ServicePropertyTypes.String;
 }

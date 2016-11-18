@@ -1,1 +1,3 @@
-Export-Package: org.osgi.service.cdi
+Export-Package:\
+	org.osgi.service.cdi,\
+	org.osgi.service.cdi.annotations
