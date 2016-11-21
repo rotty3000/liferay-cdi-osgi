@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
+import javax.inject.Scope;
 
 /**
  * When the component is registered as a service, it must be registered as a
@@ -17,5 +18,6 @@ import javax.inject.Qualifier;
 @Target(value = { ElementType.TYPE })
 @Retention(value = RetentionPolicy.RUNTIME)
 @Documented
+@Scope
 public @interface PrototypeScoped {
 }

@@ -2,6 +2,9 @@ package com.liferay.cdi.weld.container.internal;
 
 import java.util.Map;
 
+import javax.enterprise.inject.Any;
+import javax.enterprise.util.AnnotationLiteral;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.CdiEvent;
@@ -10,6 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CdiHelper {
+
+	public static final AnnotationLiteral<Any> ANY = new AnnotationLiteral<Any>() {
+		private static final long serialVersionUID = 1L;
+	};
 
 	public CdiHelper(Bundle extenderBundle, Map<ServiceReference<CdiListener>, CdiListener> listeners) {
 		_extenderBundle = extenderBundle;
@@ -26,6 +33,10 @@ public class CdiHelper {
 
 	public void fireCdiEvent(CdiEvent event) {
 		_lastEvent = event;
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("{}", event);
+		}
 
 		for (CdiListener listener : _listeners.values()) {
 			try {

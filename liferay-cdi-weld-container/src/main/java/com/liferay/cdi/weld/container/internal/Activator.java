@@ -35,28 +35,37 @@ public class Activator implements BundleActivator {
 	public void start(BundleContext bundleContext) throws Exception {
 		_bundleContext = bundleContext;
 
-		_cdiListenerTracker = new ServiceTracker<>(_bundleContext, CdiListener.class, new CdiListenerCustomizer());
+		_listenerTracker = new ServiceTracker<>(_bundleContext, CdiListener.class, new CdiListenerCustomizer());
 
-		_cdiListenerTracker.open();
+		_listenerTracker.open();
 
 		_bundleTracker = new BundleTracker<WeldCdiContainer>(
 			_bundleContext, Bundle.ACTIVE | Bundle.STARTING,
 			new CdiBundleCustomizer(_bundleContext.getBundle(), _listeners));
 
-		_bundleTracker.open();
+		Thread thread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				_bundleTracker.open();
+			}
+
+		});
+
+		thread.start();
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		_bundleTracker.close();
-		_cdiListenerTracker.close();
+		_listenerTracker.close();
 	}
 
 	private BundleContext _bundleContext;
 	private BundleTracker<WeldCdiContainer> _bundleTracker;
-	private ServiceTracker<CdiListener, CdiListener> _cdiListenerTracker;
 	private Map<ServiceReference<CdiListener>, CdiListener> _listeners =
 		new ConcurrentSkipListMap<>(Comparator.reverseOrder());
+	private ServiceTracker<CdiListener, CdiListener> _listenerTracker;
 
 	private class CdiListenerCustomizer implements ServiceTrackerCustomizer<CdiListener, CdiListener> {
 

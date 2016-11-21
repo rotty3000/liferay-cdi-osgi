@@ -38,7 +38,7 @@ public class WeldCdiContainer {
 		BeansXml beansXml = beansXmlParser.parse(scanResults.getBeanDescriptorURLs());
 
 		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
-			bundleWiring, deploymentArchiveId, beanClasses, beansXml);
+			bundleWiring, deploymentArchiveId, beanClasses, beansXml, cdiHelper);
 
 		_extensionPhase = new ExtensionPhase(bundle, cdiHelper, beanDeploymentArchive);
 	}

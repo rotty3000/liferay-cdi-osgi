@@ -11,6 +11,7 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+
 package com.liferay.cdi.weld.container.internal;
 
 import java.util.Map;
@@ -20,6 +21,8 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.CdiListener;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.liferay.cdi.weld.container.internal.container.WeldCdiContainer;
 
@@ -36,25 +39,42 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<WeldCdiConta
 			return null;
 		}
 
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDI bundle found {}", bundle);
+		}
+
 		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners);
 
-		WeldCdiContainer weldCdiContainer = new WeldCdiContainer(bundle, cdiHelper);
+		try {
+			WeldCdiContainer weldCdiContainer = new WeldCdiContainer(bundle, cdiHelper);
 
-		weldCdiContainer.open();
+			weldCdiContainer.open();
 
-		return weldCdiContainer;
+			return weldCdiContainer;
+		}
+		catch (Throwable t) {
+			if (_log.isErrorEnabled()) {
+				_log.error("Exception during init", t);
+			}
+		}
+
+		return null;
 	}
 
 	@Override
 	public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
-		removedBundle(bundle, bundleEvent, weldCdiContainer);
-		addingBundle(bundle, bundleEvent);
 	}
 
 	@Override
 	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDI bundle removed {}", bundle);
+		}
+
 		weldCdiContainer.close();
 	}
+
+	private static final Logger _log = LoggerFactory.getLogger(CdiBundleCustomizer.class);
 
 	private final Bundle _extenderBundle;
 	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;

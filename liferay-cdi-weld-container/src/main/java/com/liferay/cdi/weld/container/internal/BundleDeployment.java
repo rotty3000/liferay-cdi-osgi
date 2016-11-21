@@ -19,7 +19,6 @@ import java.util.Collection;
 import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
-import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
@@ -33,14 +32,12 @@ public class BundleDeployment implements Deployment {
 	private BeanDeploymentArchive beanDeploymentArchive;
 	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
 	private Iterable<Metadata<Extension>> extensions;
-	private ServiceRegistry services;
 
 	public BundleDeployment(Iterable<Metadata<Extension>> extensions, BeanDeploymentArchive beanDeploymentArchive) {
 		this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
 		this.beanDeploymentArchives.add(beanDeploymentArchive);
 		this.extensions = extensions;
 		this.beanDeploymentArchive = beanDeploymentArchive;
-		this.services = new SimpleServiceRegistry();
 	}
 
 	@Override
@@ -55,7 +52,7 @@ public class BundleDeployment implements Deployment {
 
 	@Override
 	public ServiceRegistry getServices() {
-		return services;
+		return beanDeploymentArchive.getServices();
 	}
 
 	@Override

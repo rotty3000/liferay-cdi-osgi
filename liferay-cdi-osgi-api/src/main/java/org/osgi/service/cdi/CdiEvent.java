@@ -23,35 +23,58 @@ import org.osgi.framework.Bundle;
  */
 public class CdiEvent {
 
-	public static int CREATING = 1;
-	public static int CREATED = 2;
-	public static int DESTROYING = 3;
-	public static int DESTROYED = 4;
-	public static int WAITING_FOR_EXTENSIONS = 5;
-	public static int WAITING_FOR_SERVICES = 6;
-	public static int SATISFIED = 7;
-	public static int FAILURE = 8;
-
-	private Bundle bundle;
-	private Throwable cause;
-	private Bundle extenderBundle;
-	private boolean replay;
-	private int type;
-
-	public CdiEvent(CdiEvent event, boolean replay) {
-		this(event.getType(), event.getBundle(), event.getExtenderBundle(), event.getCause());
-		this.replay = replay;
+	public static enum Type {
+		CREATING,
+		CREATED,
+		DESTROYING,
+		DESTROYED,
+		WAITING_FOR_EXTENSIONS,
+		WAITING_FOR_SERVICES,
+		SATISFIED,
+		FAILURE
 	}
 
-	public CdiEvent(int type, Bundle bundle, Bundle extenderBundle) {
+	public CdiEvent(CdiEvent event, boolean replay) {
+		this(event.getType(), event.getBundle(), event.getExtenderBundle(), event.getCause(), replay);
+	}
+
+	public CdiEvent(Type type, Bundle bundle, Bundle extenderBundle) {
+		this(type, bundle, extenderBundle, null, false);
+	}
+
+	public CdiEvent(Type type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
+		this(type, bundle, extenderBundle, null, false);
+	}
+
+	private CdiEvent(Type type, Bundle bundle, Bundle extenderBundle, Throwable cause, boolean replay) {
 		this.type = type;
 		this.bundle = bundle;
 		this.extenderBundle = extenderBundle;
-	}
-
-	public CdiEvent(int type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
-		this(type, bundle, extenderBundle);
 		this.cause = cause;
+		this.replay = replay;
+		this.timestamp = 0L;
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("{type:'");
+		sb.append(this.type);
+		sb.append("',timestamp:");
+		sb.append(timestamp);
+		sb.append(",bundle:'");
+		sb.append(this.bundle);
+		sb.append("',extenderBundle:'");
+		sb.append(this.extenderBundle);
+		if (cause != null) {
+			sb.append("',cause:'");
+			sb.append(this.cause.getMessage());
+		}
+		if (replay) {
+			sb.append("',replay:'");
+			sb.append(this.replay);
+		}
+		sb.append("'}");
+
+		string = sb.toString();
 	}
 
 	public Bundle getBundle() {
@@ -67,14 +90,28 @@ public class CdiEvent {
 	}
 
 	public long getTimestamp() {
-		return 0L; // TODO
+		return timestamp;
 	}
 
-	public int getType() {
+	public Type getType() {
 		return type;
 	}
 
 	public boolean isReplay() {
 		return replay;
 	}
+
+	@Override
+	public String toString() {
+		return string;
+	}
+
+	private final Bundle bundle;
+	private final Throwable cause;
+	private final Bundle extenderBundle;
+	private final boolean replay;
+	private final long timestamp;
+	private final Type type;
+	private final String string;
+
 }
