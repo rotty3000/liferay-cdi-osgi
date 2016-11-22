@@ -11,7 +11,7 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import java.util.HashSet;
 import java.util.Set;

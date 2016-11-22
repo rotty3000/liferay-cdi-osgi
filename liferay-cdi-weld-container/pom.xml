@@ -248,6 +248,11 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.namespace.extender</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
 		<groupId>org.apache.aries.jndi</groupId>
 		<artifactId>org.apache.aries.jndi.api</artifactId>
 		<version>1.1.0</version>

@@ -1,8 +1,6 @@
 package com.liferay.cdi.weld.container.internal.container;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -24,13 +22,10 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 import com.liferay.cdi.weld.container.internal.CdiHelper;
-import com.liferay.cdi.weld.container.internal.ExtensionDependency;
-import com.liferay.cdi.weld.container.internal.ExtensionMetadata;
-import com.liferay.cdi.weld.container.internal.FilterBuilder;
 
-public class ExtensionPhase {
+public class Phase_2_Extension {
 
-	public ExtensionPhase(
+	public Phase_2_Extension(
 		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
 
 		_bundle = bundle;
@@ -40,7 +35,7 @@ public class ExtensionPhase {
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
 		_extensions = new ConcurrentSkipListMap<>(Comparator.reverseOrder());
 
-		_referencePhase = new ReferencePhase(_bundle, _cdiHelper, _beanDeploymentArchive, _extensions);
+		_phase3 = new Phase_3_Reference(_bundle, _cdiHelper, _beanDeploymentArchive, _extensions);
 	}
 
 	public void close() {
@@ -51,7 +46,7 @@ public class ExtensionPhase {
 			_extensionTracker.close();
 		}
 		else {
-			_referencePhase.close();
+			_phase3.close();
 		}
 
 		_cdiHelper.fireCdiEvent(
@@ -61,7 +56,7 @@ public class ExtensionPhase {
 	public void open() {
 		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.Type.CREATING, _bundle, _cdiHelper.getExtenderBundle()));
 
-		_extensionDependencies.addAll(getExtensionDependencies());
+		findExtensionDependencies();
 
 		if (!_extensionDependencies.isEmpty()) {
 			_cdiHelper.fireCdiEvent(
@@ -69,33 +64,29 @@ public class ExtensionPhase {
 
 			Filter filter = FilterBuilder.createExtensionFilter(_extensionDependencies);
 
-			_extensionTracker = new ServiceTracker<>(
-				_bundleContext, filter, new ExtensionPhaseCustomizer());
+			_extensionTracker = new ServiceTracker<>(_bundleContext, filter, new ExtensionPhaseCustomizer());
 
 			_extensionTracker.open();
 		}
 		else {
-			_referencePhase.open();
+			_phase3.open();
 		}
 	}
 
-	private List<ExtensionDependency> getExtensionDependencies() {
-		List<ExtensionDependency> extensionDependencies = new ArrayList<>();
-
+	private void findExtensionDependencies() {
 		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(Constants.CDI_EXTENSION_CAPABILITY);
 
 		for (BundleWire wire : requiredWires) {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
+
 			if (attributes.containsKey(Constants.EXTENSION_ATTRIBUTE)) {
 				ExtensionDependency extensionDependency = new ExtensionDependency(
 					_bundleContext, wire.getProvider().getBundle().getBundleId(),
 					(String)attributes.get(Constants.EXTENSION_ATTRIBUTE));
 
-				extensionDependencies.add(extensionDependency);
+				_extensionDependencies.add(extensionDependency);
 			}
 		}
-
-		return extensionDependencies;
 	}
 
 	private final BeanDeploymentArchive _beanDeploymentArchive;
@@ -105,7 +96,7 @@ public class ExtensionPhase {
 	private final CdiHelper _cdiHelper;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
 	private final List<ExtensionDependency> _extensionDependencies = new CopyOnWriteArrayList<>();
-	private final ReferencePhase _referencePhase;
+	private final Phase_3_Reference _phase3;
 
 	private ServiceTracker<Extension, ExtensionDependency> _extensionTracker;
 
@@ -113,16 +104,12 @@ public class ExtensionPhase {
 
 		@Override
 		public ExtensionDependency addingService(ServiceReference<Extension> reference) {
-			Iterator<ExtensionDependency> iterator = _extensionDependencies.iterator();
-
 			ExtensionDependency trackedDependency = null;
 
-			while (iterator.hasNext()) {
-				ExtensionDependency extentionDependency = iterator.next();
-
-				if (extentionDependency.matches(reference)) {
-					iterator.remove();
-					trackedDependency = extentionDependency;
+			for (ExtensionDependency extensionDependency : _extensionDependencies) {
+				if (extensionDependency.matches(reference)) {
+					_extensionDependencies.remove(extensionDependency);
+					trackedDependency = extensionDependency;
 
 					Extension extension = _bundleContext.getService(reference);
 
@@ -133,7 +120,7 @@ public class ExtensionPhase {
 			}
 
 			if ((trackedDependency != null) && _extensionDependencies.isEmpty()) {
-				_referencePhase.open();
+				_phase3.open();
 			}
 
 			return trackedDependency;
@@ -146,7 +133,7 @@ public class ExtensionPhase {
 		@Override
 		public void removedService(ServiceReference<Extension> reference, ExtensionDependency extentionDependency) {
 			if (_extensionDependencies.isEmpty()) {
-				_referencePhase.close();
+				_phase3.close();
 			}
 			_extensions.remove(reference);
 			_bundleContext.ungetService(reference);

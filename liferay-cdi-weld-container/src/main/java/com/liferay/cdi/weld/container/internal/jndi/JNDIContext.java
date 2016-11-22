@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal.ctx;
+package com.liferay.cdi.weld.container.internal.jndi;
 
 import java.util.Hashtable;
 

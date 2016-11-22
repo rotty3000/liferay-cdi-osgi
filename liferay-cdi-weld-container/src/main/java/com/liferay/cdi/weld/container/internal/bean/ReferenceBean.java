@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.bean;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -6,10 +6,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.util.AnnotationLiteral;
+
+import com.liferay.cdi.weld.container.internal.container.ReferenceDependency;
 
 @SuppressWarnings("rawtypes")
 public class ReferenceBean implements Bean {
@@ -45,7 +45,7 @@ public class ReferenceBean implements Bean {
 
 	@Override
 	public Set<Annotation> getQualifiers() {
-		return Collections.singleton(new DefaultImpl());
+		return Collections.singleton(new DefaultQualifier());
 	}
 
 	@Override
@@ -79,8 +79,5 @@ public class ReferenceBean implements Bean {
 	}
 
 	private final ReferenceDependency _referenceDependency;
-
-	@SuppressWarnings("serial")
-	private class DefaultImpl extends AnnotationLiteral<Default> implements Default {}
 
 }

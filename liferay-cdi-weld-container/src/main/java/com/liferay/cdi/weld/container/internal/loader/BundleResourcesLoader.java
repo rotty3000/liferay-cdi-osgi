@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.loader;
 
 import java.io.IOException;
 import java.net.URL;
@@ -43,7 +43,7 @@ public class BundleResourcesLoader implements ProxyServices, ResourceLoader {
 			}
 		}
 
-		_classLoader = new CdiBundleClassLoader(bundles.toArray(new Bundle[0]));
+		_classLoader = new BundleClassLoader(bundles.toArray(new Bundle[0]));
 	}
 
 	@Override

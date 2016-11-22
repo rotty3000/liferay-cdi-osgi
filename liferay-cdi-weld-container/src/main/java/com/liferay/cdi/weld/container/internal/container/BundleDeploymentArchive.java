@@ -11,7 +11,7 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,18 +25,13 @@ import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.osgi.framework.wiring.BundleWiring;
 
+import com.liferay.cdi.weld.container.internal.CdiHelper;
+import com.liferay.cdi.weld.container.internal.loader.BundleResourcesLoader;
 
 /**
  * @author  Neil Griffin
  */
 public class BundleDeploymentArchive implements BeanDeploymentArchive {
-
-	private Collection<String> beanClasses;
-	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
-	private BeansXml beansXml;
-	private Collection<EjbDescriptor<?>> ejbs;
-	private String id;
-	private ServiceRegistry services;
 
 	public BundleDeploymentArchive(
 		BundleWiring bundleWiring, String id, Collection<String> beanClasses, BeansXml beansXml, CdiHelper cdiHelper) {
@@ -83,4 +78,12 @@ public class BundleDeploymentArchive implements BeanDeploymentArchive {
 	public ServiceRegistry getServices() {
 		return services;
 	}
+
+	private Collection<String> beanClasses;
+	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
+	private BeansXml beansXml;
+	private Collection<EjbDescriptor<?>> ejbs;
+	private String id;
+	private ServiceRegistry services;
+
 }

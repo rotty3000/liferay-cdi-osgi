@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
@@ -24,6 +24,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.liferay.cdi.weld.container.internal.bean.ReferenceBean;
 
 @SuppressWarnings("rawtypes")
 public class ReferenceDependency {
@@ -182,7 +184,7 @@ public class ReferenceDependency {
 
 	public void resolve(ServiceReference<?> reference) {
 		if (_log.isDebugEnabled()) {
-			_log.debug("Binding {} to injection point {}", reference, _injectionPoint);
+			_log.debug("CDIe - Binding {} to injection point {}", reference, _injectionPoint);
 		}
 
 		_serviceReference = reference;
@@ -204,7 +206,7 @@ public class ReferenceDependency {
 		}
 		catch (Throwable t) {
 			if (_log.isWarnEnabled()) {
-				_log.warn("UngetService resulted in error", t);
+				_log.warn("CDIe - UngetService resulted in error", t);
 			}
 		}
 	}

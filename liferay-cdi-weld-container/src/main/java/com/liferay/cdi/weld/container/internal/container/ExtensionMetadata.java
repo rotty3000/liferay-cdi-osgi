@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import javax.enterprise.inject.spi.Extension;
 

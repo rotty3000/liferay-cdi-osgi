@@ -64,6 +64,13 @@ public class CdiTests extends TestCase {
 		FieldInjectedReference fieldInjectedReference = bundleContext.getService(serviceReference);
 
 		assertNotNull(fieldInjectedReference);
+		assertNotNull(fieldInjectedReference.getProperties());
+		assertNotNull(fieldInjectedReference.getReference1());
+		assertNotNull(fieldInjectedReference.getReference2());
+		assertNotNull(fieldInjectedReference.getService());
+		assertEquals("value", fieldInjectedReference.getProperties().get("key"));
+		assertEquals("value", fieldInjectedReference.getReference1().getProperty("key"));
+		assertEquals("value", fieldInjectedReference.getReference2().getProperty("key"));
 	}
 
 	public void testFieldInjectedService() throws Exception {
@@ -88,7 +95,7 @@ public class CdiTests extends TestCase {
 		st.waitForService(timeout);
 
 		ServiceReference<MethodInjectedService> serviceReference = bundleContext.getServiceReference(
-				MethodInjectedService.class);
+			MethodInjectedService.class);
 
 		assertNotNull(serviceReference);
 

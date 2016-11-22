@@ -35,7 +35,7 @@ public class CdiHelper {
 		_lastEvent = event;
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("{}", event);
+			_log.debug("CDIe - Event {}", event);
 		}
 
 		for (CdiListener listener : _listeners.values()) {
@@ -44,7 +44,7 @@ public class CdiHelper {
 			}
 			catch (Throwable t) {
 				if (_log.isErrorEnabled()) {
-					_log.error("CdiListener failed!", t);
+					_log.error("CDIe - CdiListener failed", t);
 				}
 			}
 		}
@@ -55,6 +55,5 @@ public class CdiHelper {
 	private final Bundle _extenderBundle;
 	private volatile CdiEvent _lastEvent;
 	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;
-
 
 }

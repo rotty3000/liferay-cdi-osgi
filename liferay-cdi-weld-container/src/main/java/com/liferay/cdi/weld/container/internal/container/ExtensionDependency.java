@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import javax.enterprise.inject.spi.Extension;
 
@@ -11,10 +11,8 @@ import org.osgi.service.cdi.Constants;
 public class ExtensionDependency {
 
 	public ExtensionDependency(BundleContext bundleContext, Long bundleId, String name) {
-		_bundleId = bundleId;
-		_name = name;
-		_string = "(&(" + org.osgi.framework.Constants.SERVICE_BUNDLEID + "=" + _bundleId + ")(" +
-			Constants.CDI_EXTENSION_CAPABILITY + "=" + _name + "))";
+		_string = "(&(" + org.osgi.framework.Constants.SERVICE_BUNDLEID + "=" + bundleId + ")(" +
+			Constants.CDI_EXTENSION_CAPABILITY + "=" + name + "))";
 
 		try {
 			_filter = bundleContext.createFilter(_string);
@@ -33,9 +31,7 @@ public class ExtensionDependency {
 		return _string;
 	}
 
-	private final Long _bundleId;
 	private final Filter _filter;
-	private final String _name;
 	private final String _string;
 
 }

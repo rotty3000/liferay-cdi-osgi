@@ -19,21 +19,12 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cdi.CdiEvent;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.weld.container.internal.BundleDeployment;
 import com.liferay.cdi.weld.container.internal.CdiHelper;
-import com.liferay.cdi.weld.container.internal.DebugExtension;
-import com.liferay.cdi.weld.container.internal.ExtensionMetadata;
-import com.liferay.cdi.weld.container.internal.FilterBuilder;
-import com.liferay.cdi.weld.container.internal.ReferenceDependency;
-import com.liferay.cdi.weld.container.internal.ReferenceExtension;
-import com.liferay.cdi.weld.container.internal.SimpleEnvironment;
 
-public class ReferencePhase {
+public class Phase_3_Reference {
 
-	public ReferencePhase(
+	public Phase_3_Reference(
 		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive,
 		Map<ServiceReference<Extension>, Metadata<Extension>> extensions) {
 
@@ -44,7 +35,7 @@ public class ReferencePhase {
 		_bundleContext = _bundle.getBundleContext();
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
 
-		_publishPhase = new PublishPhase(_bundle, _cdiHelper, _beanDeploymentArchive);
+		_publishPhase = new Phase_4_Publish(_bundle, _cdiHelper, _beanDeploymentArchive);
 	}
 
 	public void close() {
@@ -61,8 +52,7 @@ public class ReferencePhase {
 
 		List<Metadata<Extension>> extensions = new ArrayList<>();
 
-		// Add the internal debug extension
-		extensions.add(new ExtensionMetadata(new DebugExtension(), _bundle.toString()));
+		// Add the internal extensions
 		extensions.add(
 			new ExtensionMetadata(new ReferenceExtension(_referenceDependencies, _bundleContext), _bundle.toString()));
 
@@ -86,10 +76,6 @@ public class ReferencePhase {
 			_cdiHelper.fireCdiEvent(
 				new CdiEvent(CdiEvent.Type.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
 
-			if (_log.isDebugEnabled()) {
-				_log.debug("Waiting for services {}", _referenceDependencies);
-			}
-
 			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
 			_serviceTracker = new ServiceTracker<>(_bundleContext, filter, new ReferencePhaseCustomizer(bootstrap));
@@ -101,15 +87,13 @@ public class ReferencePhase {
 		}
 	}
 
-	private static final Logger _log = LoggerFactory.getLogger(ReferencePhase.class);
-
 	private final BeanDeploymentArchive _beanDeploymentArchive;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
 	private final BundleWiring _bundleWiring;
 	private final CdiHelper _cdiHelper;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
-	private final PublishPhase _publishPhase;
+	private final Phase_4_Publish _publishPhase;
 	private final List<ReferenceDependency> _referenceDependencies = new CopyOnWriteArrayList<>();
 
 	private ServiceTracker<?, ?> _serviceTracker;

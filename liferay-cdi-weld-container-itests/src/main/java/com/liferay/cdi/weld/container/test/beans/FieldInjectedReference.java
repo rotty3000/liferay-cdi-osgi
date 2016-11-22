@@ -15,6 +15,7 @@ import com.liferay.cdi.weld.container.test.DSService;
 
 @ApplicationScoped
 @Service
+@SuppressWarnings("rawtypes")
 public class FieldInjectedReference {
 
 	@Inject
@@ -27,12 +28,27 @@ public class FieldInjectedReference {
 
 	@Inject
 	@Reference(service = DSService.class, target = "(key=value)")
-	@SuppressWarnings("rawtypes")
 	private ServiceReference reference2;
 
 	@Inject
 	@Reference(service = DSService.class, target = "(key=value)")
 	private Map<String, Object> properties;
+
+	public Map<String, Object> getProperties() {
+		return properties;
+	}
+
+	public ServiceReference<DSService> getReference1() {
+		return reference1;
+	}
+
+	public ServiceReference getReference2() {
+		return reference2;
+	}
+
+	public DSService getService() {
+		return service;
+	}
 
 	@PostConstruct
 	private void postConstructed() {

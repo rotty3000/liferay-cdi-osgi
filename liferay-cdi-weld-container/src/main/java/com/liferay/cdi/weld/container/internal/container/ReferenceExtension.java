@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import java.util.List;
 
@@ -6,17 +6,18 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cdi.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
+@SuppressWarnings("rawtypes")
 public class ReferenceExtension implements Extension {
 
 	public ReferenceExtension(List<ReferenceDependency> referenceDependencies, BundleContext bundleContext) {
@@ -27,6 +28,18 @@ public class ReferenceExtension implements Extension {
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery abd) {
 		for (ReferenceDependency referenceDependency : _referenceDependencies) {
 			referenceDependency.addBean(abd);
+		}
+
+		// Add the BundleContext as a bean
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - Bean discovery complete");
+		}
+	}
+
+	void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd) {
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - Bean discovery started");
 		}
 	}
 
@@ -44,10 +57,14 @@ public class ReferenceExtension implements Extension {
 				reference, injectionPoint, _bundleContext);
 
 			_referenceDependencies.add(referenceDependency);
+
+			if (_log.isDebugEnabled()) {
+				_log.debug("CDIe - Found OSGi service reference {}", referenceDependency);
+			}
 		}
-		catch (InvalidSyntaxException ise) {
+		catch (Exception e) {
 			if (_log.isErrorEnabled()) {
-				_log.error("Error on reference", ise);
+				_log.error("CDIe - Error on reference", e);
 			}
 		}
 	}

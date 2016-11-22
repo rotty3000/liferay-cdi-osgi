@@ -14,19 +14,24 @@
 
 package com.liferay.cdi.weld.container.internal;
 
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.cdi.CdiListener;
+import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.weld.container.internal.container.WeldCdiContainer;
+import com.liferay.cdi.weld.container.internal.container.Phase_1_Init;
 
-public class CdiBundleCustomizer implements BundleTrackerCustomizer<WeldCdiContainer> {
+public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init> {
 
 	public CdiBundleCustomizer(Bundle extenderBundle, Map<ServiceReference<CdiListener>, CdiListener> listeners) {
 		_extenderBundle = extenderBundle;
@@ -34,27 +39,27 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<WeldCdiConta
 	}
 
 	@Override
-	public WeldCdiContainer addingBundle(Bundle bundle, BundleEvent bundleEvent) {
-		if (!CapabilityUtil.requiresCdiExtender(bundle)) {
+	public Phase_1_Init addingBundle(Bundle bundle, BundleEvent bundleEvent) {
+		if (!requiresCdiExtender(bundle)) {
 			return null;
 		}
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("CDI bundle found {}", bundle);
+			_log.debug("CDIe - bundle detected {}", bundle);
 		}
 
 		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners);
 
 		try {
-			WeldCdiContainer weldCdiContainer = new WeldCdiContainer(bundle, cdiHelper);
+			Phase_1_Init phase1 = new Phase_1_Init(bundle, cdiHelper);
 
-			weldCdiContainer.open();
+			phase1.open();
 
-			return weldCdiContainer;
+			return phase1;
 		}
 		catch (Throwable t) {
 			if (_log.isErrorEnabled()) {
-				_log.error("Exception during init", t);
+				_log.error("CDIe - Exception during init", t);
 			}
 		}
 
@@ -62,16 +67,37 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<WeldCdiConta
 	}
 
 	@Override
-	public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
+	public void modifiedBundle(Bundle bundle, BundleEvent bundleEvent, Phase_1_Init phase1) {
 	}
 
 	@Override
-	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, WeldCdiContainer weldCdiContainer) {
+	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, Phase_1_Init phase1) {
 		if (_log.isDebugEnabled()) {
-			_log.debug("CDI bundle removed {}", bundle);
+			_log.debug("CDIe - bundle removed {}", bundle);
 		}
 
-		weldCdiContainer.close();
+		phase1.close();
+	}
+
+	private final boolean requiresCdiExtender(Bundle bundle) {
+		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+		List<BundleWire> requiredBundleWires = bundleWiring.getRequiredWires(ExtenderNamespace.EXTENDER_NAMESPACE);
+
+		for (BundleWire bundleWire : requiredBundleWires) {
+			Map<String, Object> attributes = bundleWire.getCapability().getAttributes();
+
+			if (attributes.containsKey(ExtenderNamespace.EXTENDER_NAMESPACE) &&
+				attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE).equals(Constants.CDI_EXTENDER)) {
+
+				Bundle providerWiringBundle = bundleWire.getProviderWiring().getBundle();
+
+				if (providerWiringBundle.equals(_extenderBundle)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private static final Logger _log = LoggerFactory.getLogger(CdiBundleCustomizer.class);

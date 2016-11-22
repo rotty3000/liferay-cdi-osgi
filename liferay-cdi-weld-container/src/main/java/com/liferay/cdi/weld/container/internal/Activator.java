@@ -26,20 +26,24 @@ import org.osgi.service.cdi.CdiListener;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.weld.container.internal.container.WeldCdiContainer;
+import com.liferay.cdi.weld.container.internal.container.Phase_1_Init;
 
 public class Activator implements BundleActivator {
 
 	@Override
 	public void start(BundleContext bundleContext) throws Exception {
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - starting {}", bundleContext.getBundle());
+		}
+
 		_bundleContext = bundleContext;
 
 		_listenerTracker = new ServiceTracker<>(_bundleContext, CdiListener.class, new CdiListenerCustomizer());
 
-		_listenerTracker.open();
-
-		_bundleTracker = new BundleTracker<WeldCdiContainer>(
+		_bundleTracker = new BundleTracker<Phase_1_Init>(
 			_bundleContext, Bundle.ACTIVE | Bundle.STARTING,
 			new CdiBundleCustomizer(_bundleContext.getBundle(), _listeners));
 
@@ -47,7 +51,12 @@ public class Activator implements BundleActivator {
 
 			@Override
 			public void run() {
+				_listenerTracker.open();
 				_bundleTracker.open();
+
+				if (_log.isDebugEnabled()) {
+					_log.debug("CDIe - started {}", bundleContext.getBundle());
+				}
 			}
 
 		});
@@ -56,13 +65,23 @@ public class Activator implements BundleActivator {
 	}
 
 	@Override
-	public void stop(BundleContext context) throws Exception {
+	public void stop(BundleContext bundleContext) throws Exception {
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - stoping {}", bundleContext.getBundle());
+		}
+
 		_bundleTracker.close();
 		_listenerTracker.close();
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - stoped {}", bundleContext.getBundle());
+		}
 	}
 
+	private static final Logger _log = LoggerFactory.getLogger(Activator.class);
+
 	private BundleContext _bundleContext;
-	private BundleTracker<WeldCdiContainer> _bundleTracker;
+	private BundleTracker<Phase_1_Init> _bundleTracker;
 	private Map<ServiceReference<CdiListener>, CdiListener> _listeners =
 		new ConcurrentSkipListMap<>(Comparator.reverseOrder());
 	private ServiceTracker<CdiListener, CdiListener> _listenerTracker;
@@ -85,7 +104,6 @@ public class Activator implements BundleActivator {
 			_listeners.remove(reference);
 			_bundleContext.ungetService(reference);
 		}
-
 
 	}
 

@@ -11,7 +11,7 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.container;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,15 +23,10 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
-
 /**
  * @author  Neil Griffin
  */
 public class BundleDeployment implements Deployment {
-
-	private BeanDeploymentArchive beanDeploymentArchive;
-	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
-	private Iterable<Metadata<Extension>> extensions;
 
 	public BundleDeployment(Iterable<Metadata<Extension>> extensions, BeanDeploymentArchive beanDeploymentArchive) {
 		this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
@@ -59,5 +54,9 @@ public class BundleDeployment implements Deployment {
 	public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> aClass) {
 		return beanDeploymentArchive;
 	}
+
+	private BeanDeploymentArchive beanDeploymentArchive;
+	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
+	private Iterable<Metadata<Extension>> extensions;
 
 }

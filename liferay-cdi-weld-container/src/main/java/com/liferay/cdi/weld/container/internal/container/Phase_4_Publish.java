@@ -17,7 +17,6 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Singleton;
-import javax.naming.Name;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -38,11 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.liferay.cdi.weld.container.internal.CdiHelper;
-import com.liferay.cdi.weld.container.internal.ctx.JNDIContext;
+import com.liferay.cdi.weld.container.internal.jndi.JndiObjectFactory;
 
-public class PublishPhase {
+public class Phase_4_Publish {
 
-	public PublishPhase(
+	public Phase_4_Publish(
 		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
 
 		_bundle = bundle;
@@ -79,16 +78,16 @@ public class PublishPhase {
 		bootstrap.validateBeans();
 		bootstrap.endInitialization();
 
-		Dictionary<String, Object> properties = new Hashtable<>();
-		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
-		properties.put("osgi.cdi.container.version", _bundle.getVersion());
-
 		BeanManager beanManager = bootstrap.getManager(_beanDeploymentArchive);
 
-		_cdiContainerRegistration = _bundle.getBundleContext().registerService(
-			CdiContainer.class, new InternalCdiContainer(beanManager), properties);
+		Set<Bean<?>> allBeans = beanManager.getBeans(Object.class, CdiHelper.ANY);
 
-		properties = new Hashtable<>();
+		if (!allBeans.isEmpty()) {
+			processBeans(beanManager, allBeans);
+		}
+
+		Dictionary<String, Object> properties = new Hashtable<>();
+
 		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
 		properties.put("osgi.cdi.container.version", _bundle.getVersion());
 
@@ -101,13 +100,14 @@ public class PublishPhase {
 		properties.put(JNDIConstants.JNDI_URLSCHEME, "java");
 
 		_objectFactoryRegistration = _bundle.getBundleContext().registerService(
-			ObjectFactory.class, new JndiObjectFactory(new JNDIContext(beanManager)), properties);
+			ObjectFactory.class, new JndiObjectFactory(beanManager), properties);
 
-		Set<Bean<?>> allBeans = beanManager.getBeans(Object.class, CdiHelper.ANY);
+		properties = new Hashtable<>();
+		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
+		properties.put("osgi.cdi.container.version", _bundle.getVersion());
 
-		if (!allBeans.isEmpty()) {
-			processBeans(beanManager, allBeans);
-		}
+		_cdiContainerRegistration = _bundle.getBundleContext().registerService(
+			CdiContainer.class, new CdiContainerService(beanManager), properties);
 
 		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.Type.CREATED, _bundle, _cdiHelper.getExtenderBundle()));
 	}
@@ -165,8 +165,8 @@ public class PublishPhase {
 
 			if (_log.isErrorEnabled()) {
 				_log.error(
-					"Bean '{}' cannot use the @Service annotation because it has an unsupported scope '{}'",
-					bean, scope);
+					"CDIe - Bean {} cannot use the @Service annotation because it has an unsupported scope {}",
+					bean, scope.getName());
 			}
 
 			return;
@@ -187,7 +187,7 @@ public class PublishPhase {
 		CreationalContext creationalContext = beanManager.createCreationalContext(bean);
 
 		if (_log.isDebugEnabled()) {
-			_log.debug("Publishing bean '{}' as service with scope '{}'.", bean.getBeanClass(), scope);
+			_log.debug("CDIe - Publishing bean {} as service with scope {}.", bean.getBeanClass(), scope.getName());
 		}
 
 		if (PrototypeScoped.class.isAssignableFrom(scope)) {
@@ -206,7 +206,7 @@ public class PublishPhase {
 		}
 	}
 
-	private static final Logger _log = LoggerFactory.getLogger(PublishPhase.class);
+	private static final Logger _log = LoggerFactory.getLogger(Phase_4_Publish.class);
 
 	private final BeanDeploymentArchive _beanDeploymentArchive;
 	private final Bundle _bundle;
@@ -270,9 +270,9 @@ public class PublishPhase {
 
 	}
 
-	private class InternalCdiContainer implements CdiContainer {
+	private class CdiContainerService implements CdiContainer {
 
-		public InternalCdiContainer(BeanManager beanManager) {
+		public CdiContainerService(BeanManager beanManager) {
 			_beanManager = beanManager;
 		}
 
@@ -282,28 +282,6 @@ public class PublishPhase {
 		}
 
 		private final BeanManager _beanManager;
-
-	}
-
-	private class JndiObjectFactory implements ObjectFactory {
-
-		public JndiObjectFactory(JNDIContext jndiContext) {
-			_jndiContext = jndiContext;
-		}
-
-		@Override
-		public Object getObjectInstance(
-				Object obj, Name name, javax.naming.Context context, Hashtable<?, ?> environment)
-			throws Exception {
-
-			if (obj == null) {
-				return _jndiContext;
-			}
-
-			return null;
-		}
-
-		private final JNDIContext _jndiContext;
 
 	}
 

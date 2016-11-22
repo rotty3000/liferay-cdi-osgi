@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.internal;
+package com.liferay.cdi.weld.container.internal.loader;
 
 import java.io.IOException;
 import java.net.URL;
@@ -10,9 +10,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.framework.Bundle;
 
-public class CdiBundleClassLoader extends URLClassLoader {
+public class BundleClassLoader extends URLClassLoader {
 
-	public CdiBundleClassLoader(Bundle... bundles) {
+	public BundleClassLoader(Bundle... bundles) {
 		super(new URL[0]);
 
 		if (bundles.length == 0) {
