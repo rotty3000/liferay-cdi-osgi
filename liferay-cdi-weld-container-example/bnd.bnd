@@ -1,2 +1,0 @@
-Bundle-Description: Example bundle for the CDI Weld Container
-Require-Capability: osgi.extender;filter:='(&(osgi.extender=osgi.cdi)(version>=1.0)(!(version>=2.0)))'

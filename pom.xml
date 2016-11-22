@@ -47,15 +47,13 @@
         </plugins>
     </build>
     <modules>
+        <module>liferay-cdi-log4j-configuration</module>
         <module>liferay-cdi-osgi-api</module>
-        <module>liferay-cdi-portable-extension</module>
         <module>liferay-cdi-weld-container</module>
-        <module>liferay-cdi-weld-container-example</module>
         <module>liferay-cdi-weld-container-example-run</module>
         <module>liferay-cdi-weld-container-itests</module>
         <module>liferay-cdi-weld-container-itests-run</module>
         <module>liferay-cdi-weld-jsf</module>
-        <!-- <module>liferay-cdi-osgi-extender</module> -->
     </modules>
     <dependencies>
         <dependency>
