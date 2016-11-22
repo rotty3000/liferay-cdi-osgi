@@ -28,7 +28,7 @@ public class ExtensionDependency {
 
 	public ExtensionDependency(BundleContext bundleContext, Long bundleId, String name) {
 		_string = "(&(" + org.osgi.framework.Constants.SERVICE_BUNDLEID + "=" + bundleId + ")(" +
-			Constants.CDI_EXTENSION_CAPABILITY + "=" + name + "))";
+			Constants.CDI_EXTENSION + "=" + name + "))";
 
 		try {
 			_filter = bundleContext.createFilter(_string);

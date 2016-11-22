@@ -3,5 +3,7 @@
  * package has two types of users: the consumers that use the API in this package and the providers that implement the
  * API in this package.
  */
-@org.osgi.annotation.versioning.Version("0.0.1")
+@Version("0.0.1")
 package org.osgi.service.cdi.annotations;
+
+import org.osgi.annotation.versioning.Version;

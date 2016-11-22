@@ -90,15 +90,16 @@ public class Phase_2_Extension {
 	}
 
 	private void findExtensionDependencies() {
-		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(Constants.CDI_EXTENSION_CAPABILITY);
+		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(Constants.CDI_EXTENSION);
 
 		for (BundleWire wire : requiredWires) {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
 
-			if (attributes.containsKey(Constants.EXTENSION_ATTRIBUTE)) {
+			String extension = (String)attributes.get(Constants.CDI_EXTENSION_ATTRIBUTE);
+
+			if (extension != null) {
 				ExtensionDependency extensionDependency = new ExtensionDependency(
-					_bundleContext, wire.getProvider().getBundle().getBundleId(),
-					(String)attributes.get(Constants.EXTENSION_ATTRIBUTE));
+					_bundleContext, wire.getProvider().getBundle().getBundleId(), extension);
 
 				_extensionDependencies.add(extensionDependency);
 			}

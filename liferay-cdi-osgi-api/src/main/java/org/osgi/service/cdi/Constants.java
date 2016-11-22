@@ -22,7 +22,8 @@ package org.osgi.service.cdi;
 public class Constants {
 
 	public static final String CDI_EXTENDER = "osgi.cdi";
-	public static final String CDI_EXTENSION_CAPABILITY = "osgi.extender";
-	public static final String EXTENDER_CAPABILITY = "osgi.cdi.extension";
-	public static final String EXTENSION_ATTRIBUTE = "extensions";
+
+	public static final String CDI_EXTENSION = "osgi.cdi.extension";
+
+	public static final String CDI_EXTENSION_ATTRIBUTE = "extensions";
 }
