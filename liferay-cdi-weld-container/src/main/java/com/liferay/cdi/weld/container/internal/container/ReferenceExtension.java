@@ -32,6 +32,8 @@ import org.osgi.service.cdi.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.liferay.cdi.weld.container.internal.bean.BundleContextBean;
+
 @ApplicationScoped
 @SuppressWarnings("rawtypes")
 public class ReferenceExtension implements Extension {
@@ -47,6 +49,8 @@ public class ReferenceExtension implements Extension {
 		}
 
 		// Add the BundleContext as a bean
+
+		abd.addBean(new BundleContextBean(_bundleContext));
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("CDIe - Bean discovery complete");

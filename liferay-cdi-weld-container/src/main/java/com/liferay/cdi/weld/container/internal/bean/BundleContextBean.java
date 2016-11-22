@@ -21,6 +21,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Set;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -43,8 +44,18 @@ public class BundleContextBean implements Bean<BundleContext> {
 	}
 
 	@Override
-	public Set<Type> getTypes() {
-		return Collections.singleton(BundleContext.class);
+	public Class<?> getBeanClass() {
+		return BundleContext.class;
+	}
+
+	@Override
+	public Set<InjectionPoint> getInjectionPoints() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public String getName() {
+		return "BundleContext";
 	}
 
 	@Override
@@ -54,43 +65,26 @@ public class BundleContextBean implements Bean<BundleContext> {
 
 	@Override
 	public Class<? extends Annotation> getScope() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return Dependent.class;
 	}
 
 	@Override
 	public Set<Class<? extends Annotation>> getStereotypes() {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Set<Type> getTypes() {
+		return Collections.singleton(BundleContext.class);
 	}
 
 	@Override
 	public boolean isAlternative() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public Class<?> getBeanClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Set<InjectionPoint> getInjectionPoints() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean isNullable() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

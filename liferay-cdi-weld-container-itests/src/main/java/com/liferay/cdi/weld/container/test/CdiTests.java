@@ -19,6 +19,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.CdiContainer;
 import org.osgi.util.tracker.ServiceTracker;
 
+import com.liferay.cdi.weld.container.test.beans.BundleContextBean;
 import com.liferay.cdi.weld.container.test.beans.ConstructorInjectedService;
 import com.liferay.cdi.weld.container.test.beans.FieldInjectedReference;
 import com.liferay.cdi.weld.container.test.beans.FieldInjectedService;
@@ -143,6 +144,23 @@ public class CdiTests extends TestCase {
 
 		assertNotNull(beanManager);
 		assertPojoExists(beanManager);
+	}
+
+	public void testBundleContextInjection() throws Exception {
+		ServiceTracker<CdiContainer, CdiContainer> st = getCdiContainerTracker();
+
+		CdiContainer container = st.waitForService(timeout);
+
+		BeanManager beanManager = container.getBeanManager();
+
+		assertNotNull(beanManager);
+
+		Set<Bean<?>> beans = beanManager.getBeans(BundleContextBean.class, any);
+		Bean<?> bean = beanManager.resolve(beans);
+		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+		BundleContextBean bcb = (BundleContextBean)beanManager.getReference(bean, BundleContextBean.class, ctx);
+		assertNotNull(bcb);
+		assertNotNull(bcb.getBundleContext());
 	}
 
 	private void assertPojoExists(BeanManager beanManager) {
