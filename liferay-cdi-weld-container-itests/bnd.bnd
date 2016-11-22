@@ -1,5 +1,5 @@
 Bundle-Description: Integration Test bundle for the CDI Weld Container
 Require-Capability: osgi.extender;filter:='(&(osgi.extender=osgi.cdi)(version>=1.0)(!(version>=2.0)))'
 Test-Cases: \
-	${classes;CONCRETE;EXTENDS;junit.framework.TestCase},\
+	${classes;CONCRETE;EXTENDS;com.liferay.cdi.weld.container.test.AbstractTestCase},\
 	${classes;CONCRETE;ANNOTATED;org.junit.Test}
