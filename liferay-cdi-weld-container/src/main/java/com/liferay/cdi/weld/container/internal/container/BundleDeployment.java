@@ -23,40 +23,46 @@ import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.bootstrap.spi.Deployment;
+import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
-public class BundleDeployment implements Deployment {
+public class BundleDeployment implements CDI11Deployment {
 
 	public BundleDeployment(Iterable<Metadata<Extension>> extensions, BeanDeploymentArchive beanDeploymentArchive) {
-		this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
-		this.beanDeploymentArchives.add(beanDeploymentArchive);
-		this.extensions = extensions;
-		this.beanDeploymentArchive = beanDeploymentArchive;
+		_extensions = extensions;
+		_beanDeploymentArchive = beanDeploymentArchive;
+
+		_beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
+		_beanDeploymentArchives.add(beanDeploymentArchive);
+	}
+
+	@Override
+	public BeanDeploymentArchive getBeanDeploymentArchive(Class<?> beanClass) {
+		return _beanDeploymentArchive;
 	}
 
 	@Override
 	public Collection<BeanDeploymentArchive> getBeanDeploymentArchives() {
-		return beanDeploymentArchives;
+		return _beanDeploymentArchives;
 	}
 
 	@Override
 	public Iterable<Metadata<Extension>> getExtensions() {
-		return extensions;
+		return _extensions;
 	}
 
 	@Override
 	public ServiceRegistry getServices() {
-		return beanDeploymentArchive.getServices();
+		return _beanDeploymentArchive.getServices();
 	}
 
 	@Override
 	public BeanDeploymentArchive loadBeanDeploymentArchive(Class<?> aClass) {
-		return beanDeploymentArchive;
+		return _beanDeploymentArchive;
 	}
 
-	private BeanDeploymentArchive beanDeploymentArchive;
-	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
-	private Iterable<Metadata<Extension>> extensions;
+	private final BeanDeploymentArchive _beanDeploymentArchive;
+	private final Collection<BeanDeploymentArchive> _beanDeploymentArchives;
+	private final Iterable<Metadata<Extension>> _extensions;
 
 }

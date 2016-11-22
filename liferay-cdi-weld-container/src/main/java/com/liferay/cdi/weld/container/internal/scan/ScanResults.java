@@ -21,19 +21,20 @@ import java.util.Collection;
 
 public class ScanResults {
 
-	private Collection<String> beanClasses;
-	private Collection<URL> beanDescriptorURLs;
-
 	public ScanResults(Collection<String> beanClasses, Collection<URL> beanDescriptorURLs) {
-		this.beanClasses = beanClasses;
-		this.beanDescriptorURLs = beanDescriptorURLs;
+		_beanClasses = beanClasses;
+		_beanDescriptorURLs = beanDescriptorURLs;
 	}
 
 	public Collection<String> getBeanClasses() {
-		return beanClasses;
+		return _beanClasses;
 	}
 
 	public Collection<URL> getBeanDescriptorURLs() {
-		return beanDescriptorURLs;
+		return _beanDescriptorURLs;
 	}
+
+	private Collection<String> _beanClasses;
+	private Collection<URL> _beanDescriptorURLs;
+
 }

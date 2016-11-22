@@ -36,54 +36,54 @@ public class BundleDeploymentArchive implements BeanDeploymentArchive {
 	public BundleDeploymentArchive(
 		BundleWiring bundleWiring, String id, Collection<String> beanClasses, BeansXml beansXml, CdiHelper cdiHelper) {
 
-		this.id = id;
-		this.beanClasses = beanClasses;
-		this.beanDeploymentArchives = Collections.emptyList();
-		this.beansXml = beansXml;
-		this.ejbs = Collections.emptyList();
-		this.services = new SimpleServiceRegistry();
+		_id = id;
+		_beanClasses = beanClasses;
+		_beanDeploymentArchives = Collections.emptyList();
+		_beansXml = beansXml;
+		_ejbs = Collections.emptyList();
+		_services = new SimpleServiceRegistry();
 
 		BundleResourcesLoader loader = new BundleResourcesLoader(bundleWiring, cdiHelper.getExtenderBundle());
 
-		services.add(ResourceLoader.class, loader);
-		services.add(ProxyServices.class, loader);
+		_services.add(ResourceLoader.class, loader);
+		_services.add(ProxyServices.class, loader);
 	}
 
 	@Override
 	public Collection<String> getBeanClasses() {
-		return beanClasses;
+		return _beanClasses;
 	}
 
 	@Override
 	public Collection<BeanDeploymentArchive> getBeanDeploymentArchives() {
-		return beanDeploymentArchives;
+		return _beanDeploymentArchives;
 	}
 
 	@Override
 	public BeansXml getBeansXml() {
-		return beansXml;
+		return _beansXml;
 	}
 
 	@Override
 	public Collection<EjbDescriptor<?>> getEjbs() {
-		return ejbs;
+		return _ejbs;
 	}
 
 	@Override
 	public String getId() {
-		return id;
+		return _id;
 	}
 
 	@Override
 	public ServiceRegistry getServices() {
-		return services;
+		return _services;
 	}
 
-	private Collection<String> beanClasses;
-	private Collection<BeanDeploymentArchive> beanDeploymentArchives;
-	private BeansXml beansXml;
-	private Collection<EjbDescriptor<?>> ejbs;
-	private String id;
-	private ServiceRegistry services;
+	private final Collection<String> _beanClasses;
+	private final Collection<BeanDeploymentArchive> _beanDeploymentArchives;
+	private final BeansXml _beansXml;
+	private final Collection<EjbDescriptor<?>> _ejbs;
+	private final String _id;
+	private final ServiceRegistry _services;
 
 }

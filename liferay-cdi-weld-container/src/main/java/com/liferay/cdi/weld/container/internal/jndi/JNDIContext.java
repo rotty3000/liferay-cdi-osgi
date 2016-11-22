@@ -32,8 +32,6 @@ import org.jboss.weld.exceptions.UnsupportedOperationException;
 
 public class JNDIContext implements Context {
 
-	private final BeanManager _beanManager;
-
 	public JNDIContext(BeanManager beanManager) {
 		_beanManager = beanManager;
 	}
@@ -188,5 +186,7 @@ public class JNDIContext implements Context {
 	public String getNameInNamespace() throws NamingException {
 		throw new OperationNotSupportedException();
 	}
+
+	private final BeanManager _beanManager;
 
 }

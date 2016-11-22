@@ -24,21 +24,22 @@ import org.jboss.weld.bootstrap.api.Service;
 
 public class SimpleEnvironment implements Environment {
 
-	private Set<Class<? extends Service>> requiredBeanDeploymentArchiveServices;
-	private Set<Class<? extends Service>> requiredDeploymentServices;
-
 	public SimpleEnvironment() {
-		this.requiredBeanDeploymentArchiveServices = new HashSet<Class<? extends Service>>();
-		this.requiredDeploymentServices = new HashSet<Class<? extends Service>>();
+		_requiredBeanDeploymentArchiveServices = new HashSet<Class<? extends Service>>();
+		_requiredDeploymentServices = new HashSet<Class<? extends Service>>();
 	}
 
 	@Override
 	public Set<Class<? extends Service>> getRequiredBeanDeploymentArchiveServices() {
-		return requiredBeanDeploymentArchiveServices;
+		return _requiredBeanDeploymentArchiveServices;
 	}
 
 	@Override
 	public Set<Class<? extends Service>> getRequiredDeploymentServices() {
-		return requiredDeploymentServices;
+		return _requiredDeploymentServices;
 	}
+
+	private final Set<Class<? extends Service>> _requiredBeanDeploymentArchiveServices;
+	private final Set<Class<? extends Service>> _requiredDeploymentServices;
+
 }

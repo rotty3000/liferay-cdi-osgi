@@ -53,6 +53,6 @@ public class Phase_1_Init {
 		_phase2.open();
 	}
 
-	private Phase_2_Extension _phase2;
+	private final Phase_2_Extension _phase2;
 
 }
