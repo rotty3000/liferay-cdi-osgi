@@ -1,1 +1,0 @@
-Provide-Capability: osgi.cdi.extension; extension="liferay.cdi.portable.extension"; version:Version="${Bundle-Version}"

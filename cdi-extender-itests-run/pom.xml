@@ -11,28 +11,28 @@
 		<relativePath>..</relativePath>
 	</parent>
 
-	<artifactId>com.liferay.cdi.weld.container.example-run</artifactId>
-
+	<artifactId>com.liferay.cdi.extender.itests-run</artifactId>
+	<name>CDI Extender Integration Test Plan</name>
 	<packaging>pom</packaging>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>bnd-export-maven-plugin</artifactId>
+				<artifactId>bnd-testing-maven-plugin</artifactId>
 				<version>3.4.0-SNAPSHOT</version>
 				<configuration>
 					<failOnChanges>false</failOnChanges>
 					<resolve>false</resolve>
 					<bndruns>
-						<bndrun>example.bndrun</bndrun>
+						<bndrun>itest.bndrun</bndrun>
 					</bndruns>
 					<targetDir>.</targetDir>
 				</configuration>
 				<executions>
 					<execution>
 						<goals>
-							<goal>export</goal>
+							<goal>testing</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -42,13 +42,18 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.liferay.cdi</groupId>
-			<artifactId>com.liferay.cdi.log4j-configuration</artifactId>
+			<artifactId>com.liferay.cdi.extender</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.cdi</groupId>
-			<artifactId>com.liferay.cdi.weld.container</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<artifactId>com.liferay.cdi.extender.itests</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.liferay.cdi</groupId>
+			<artifactId>com.liferay.cdi.log4j-configuration</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.aries.jndi</groupId>
@@ -66,14 +71,9 @@
 			<version>2.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.gogo.command</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.gogo.jline</artifactId>
-			<version>1.0.0</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.21</version>
 		</dependency>
 	</dependencies>
 </project>

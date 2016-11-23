@@ -6,6 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.liferay.cdi</groupId>
     <artifactId>com.liferay.cdi</artifactId>
+    <name>CDI Extender Project</name>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
@@ -47,12 +48,12 @@
         </plugins>
     </build>
     <modules>
-        <module>liferay-cdi-log4j-configuration</module>
-        <module>liferay-cdi-osgi-api</module>
-        <module>liferay-cdi-weld-container</module>
-        <module>liferay-cdi-weld-container-example-run</module>
-        <module>liferay-cdi-weld-container-itests</module>
-        <module>liferay-cdi-weld-container-itests-run</module>
+        <module>cdi-extender-log4j-configuration</module>
+        <module>cdi-extender-osgi-api</module>
+        <module>cdi-extender</module>
+        <module>cdi-extender-run</module>
+        <module>cdi-extender-itests</module>
+        <module>cdi-extender-itests-run</module>
         <module>liferay-cdi-weld-jsf</module>
     </modules>
     <dependencies>
