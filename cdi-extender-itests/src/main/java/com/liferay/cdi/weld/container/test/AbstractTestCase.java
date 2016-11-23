@@ -13,6 +13,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cdi.CdiContainer;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -43,11 +44,7 @@ public class AbstractTestCase extends TestCase {
 		assertNotNull(pojo);
 	}
 
-	CdiContainer waitForCdiContainer() throws Exception {
-		return waitForCdiContainer(bundle.getBundleId());
-	}
-
-	CdiContainer waitForCdiContainer(long bundleId) throws Exception {
+	ServiceTracker<CdiContainer, CdiContainer> getServiceTracker(long bundleId) throws InvalidSyntaxException {
 		Filter filter = bundleContext.createFilter(
 			"(&(objectClass=" + CdiContainer.class.getName() + ")(service.bundleid=" + bundleId + "))");
 
@@ -55,7 +52,15 @@ public class AbstractTestCase extends TestCase {
 
 		serviceTracker.open();
 
-		return serviceTracker.waitForService(timeout);
+		return serviceTracker;
+	}
+
+	CdiContainer waitForCdiContainer() throws Exception {
+		return waitForCdiContainer(bundle.getBundleId());
+	}
+
+	CdiContainer waitForCdiContainer(long bundleId) throws Exception {
+		return getServiceTracker(bundleId).waitForService(timeout);
 	}
 
 	static final AnnotationLiteral<Any> any = new AnnotationLiteral<Any>() {

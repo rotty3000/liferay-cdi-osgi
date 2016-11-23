@@ -51,10 +51,10 @@
         <module>cdi-extender-log4j-configuration</module>
         <module>cdi-extender-osgi-api</module>
         <module>cdi-extender</module>
-        <module>cdi-extender-run</module>
         <module>cdi-extender-itests</module>
         <module>cdi-extender-itests-run</module>
-        <module>liferay-cdi-weld-jsf</module>
+        <!-- <module>cdi-extender-run</module> -->
+        <!-- <module>liferay-cdi-weld-jsf</module> -->
     </modules>
     <dependencies>
         <dependency>

@@ -32,6 +32,17 @@ import java.lang.annotation.Target;
 public @interface Reference {
 
 	/**
+	 * The reference scope for this reference.
+	 *
+	 * <p>
+	 * If not specified, the {@link ReferenceScope#BUNDLE bundle} reference
+	 * scope is used.
+	 *
+	 * @see "The scope attribute of the reference element of a Component Description."
+	 */
+	ReferenceScope scope() default ReferenceScope.BUNDLE;
+
+	/**
 	 * The target property for this reference.
 	 *
 	 * <p>

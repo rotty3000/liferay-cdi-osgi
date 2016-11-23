@@ -21,7 +21,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -67,24 +66,43 @@ public class Phase_4_Publish {
 	}
 
 	public void close() {
-		Iterator<ServiceRegistration<?>> iterator = _registrations.iterator();
-
-		while (iterator.hasNext()) {
-			ServiceRegistration<?> registration = iterator.next();
-			iterator.remove();
+		for (ServiceRegistration<?> registration : _registrations) {
 			registration.unregister();
 		}
 
+		_registrations.clear();
+
 		if (_cdiContainerRegistration != null) {
-			_cdiContainerRegistration.unregister();
+			try {
+				_cdiContainerRegistration.unregister();
+			}
+			catch (Exception e) {
+				if (_log.isTraceEnabled()) {
+					_log.trace("Service already unregistered {}", _cdiContainerRegistration);
+				}
+			}
 		}
 
 		if (_beanManagerRegistration != null) {
-			_beanManagerRegistration.unregister();
+			try {
+				_beanManagerRegistration.unregister();
+			}
+			catch (Exception e) {
+				if (_log.isTraceEnabled()) {
+					_log.trace("Service already unregistered {}", _beanManagerRegistration);
+				}
+			}
 		}
 
 		if (_objectFactoryRegistration != null) {
-			_objectFactoryRegistration.unregister();
+			try {
+				_objectFactoryRegistration.unregister();
+			}
+			catch (Exception e) {
+				if (_log.isTraceEnabled()) {
+					_log.trace("Service already unregistered {}", _objectFactoryRegistration);
+				}
+			}
 		}
 	}
 

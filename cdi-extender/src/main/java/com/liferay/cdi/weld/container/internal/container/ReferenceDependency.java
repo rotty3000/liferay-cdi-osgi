@@ -25,10 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Scope;
+import javax.inject.Singleton;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -38,6 +39,7 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.annotations.Reference;
+import org.osgi.service.cdi.annotations.ReferenceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,22 +60,22 @@ public class ReferenceDependency {
 		_injectionPoint = injectionPoint;
 		_bundleContext = bundleContext;
 
-		Class<? extends Annotation> scope = Dependent.class;
+		Class<? extends Annotation> scope = ApplicationScoped.class;
 
-		for (Annotation qualifier : _injectionPoint.getQualifiers()) {
-			if (qualifier.getClass().getAnnotation(Scope.class) != null) {
-				scope = qualifier.getClass();
-				break;
-			}
+		if (reference.scope() == ReferenceScope.PROTOTYPE_REQUIRED) {
+			scope = Dependent.class;
+		}
+		else if (reference.scope() == ReferenceScope.SINGLETON) {
+			scope = Singleton.class;
 		}
 
 		_scope = scope;
 
 		String targetFilter = _reference.target();
 
-		int length = targetFilter.length();
+		int targetFilterLength = targetFilter.length();
 
-		if (length > 0) {
+		if (targetFilterLength > 0) {
 			FrameworkUtil.createFilter(targetFilter);
 		}
 
@@ -126,20 +128,32 @@ public class ReferenceDependency {
 
 		StringBuilder sb = new StringBuilder();
 
-		if (length > 0) {
-			sb.append("(&");
-		}
-
-		sb.append("(");
+		sb.append("(&(");
 		sb.append(Constants.OBJECTCLASS);
 		sb.append("=");
 		sb.append(serviceType.getName());
 		sb.append(")");
 
-		if (length > 0) {
-			sb.append(targetFilter);
+		if (reference.scope() == ReferenceScope.PROTOTYPE_REQUIRED) {
+			sb.append("(");
+			sb.append(Constants.SERVICE_SCOPE);
+			sb.append("=");
+			sb.append(Constants.SCOPE_PROTOTYPE);
 			sb.append(")");
 		}
+		else if (reference.scope() == ReferenceScope.SINGLETON) {
+			sb.append("(");
+			sb.append(Constants.SERVICE_SCOPE);
+			sb.append("=");
+			sb.append(Constants.SCOPE_SINGLETON);
+			sb.append(")");
+		}
+
+		if ((targetFilterLength > 0)) {
+			sb.append(targetFilter);
+		}
+
+		sb.append(")");
 
 		_string = sb.toString();
 		_filter = FrameworkUtil.createFilter(_string);

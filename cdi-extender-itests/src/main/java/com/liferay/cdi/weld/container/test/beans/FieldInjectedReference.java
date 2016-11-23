@@ -9,36 +9,47 @@ import javax.inject.Inject;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.annotations.Reference;
+import org.osgi.service.cdi.annotations.ReferenceScope;
 import org.osgi.service.cdi.annotations.Service;
 
-import com.liferay.cdi.weld.container.test.DSService;
+import com.liferay.cdi.weld.container.test.DSServiceBundleScope;
+import com.liferay.cdi.weld.container.test.DSServicePrototypeScope;
 
 @ApplicationScoped
 @Service
 @SuppressWarnings("rawtypes")
 public class FieldInjectedReference {
 
+	@ApplicationScoped
 	@Inject
-	@Reference(target = "(key=value)")
-	private DSService service;
+	@Reference
+	private DSServiceBundleScope bundlescopped;
 
 	@Inject
 	@Reference(target = "(key=value)")
-	private ServiceReference<DSService> reference1;
+	private DSServicePrototypeScope service;
 
 	@Inject
-	@Reference(service = DSService.class, target = "(key=value)")
+	@Reference(target = "(key=value)")
+	private ServiceReference<DSServicePrototypeScope> reference1;
+
+	@Inject
+	@Reference(
+		scope = ReferenceScope.PROTOTYPE_REQUIRED,
+		service = DSServicePrototypeScope.class,
+		target = "(key=value)"
+	)
 	private ServiceReference reference2;
 
 	@Inject
-	@Reference(service = DSService.class, target = "(key=value)")
+	@Reference(service = DSServicePrototypeScope.class, target = "(key=value)")
 	private Map<String, Object> properties;
 
 	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
-	public ServiceReference<DSService> getReference1() {
+	public ServiceReference<DSServicePrototypeScope> getReference1() {
 		return reference1;
 	}
 
@@ -46,7 +57,7 @@ public class FieldInjectedReference {
 		return reference2;
 	}
 
-	public DSService getService() {
+	public DSServicePrototypeScope getService() {
 		return service;
 	}
 
