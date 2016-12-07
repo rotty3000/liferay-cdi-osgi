@@ -34,10 +34,6 @@ public @interface Service {
 	 * The types under which to register this CDI bean as a service.
 	 *
 	 * <p>
-	 * If no service should be registered, the empty value
-	 * <code>&#x7B;&#x7D;</code> must be specified.
-	 *
-	 * <p>
 	 * If not specified, the service types for this CDI bean are all the
 	 * <i>directly</i> implemented interfaces of the class being annotated.
 	 *
@@ -47,7 +43,7 @@ public @interface Service {
 	 *
 	 * @see "The types element of a Service Description."
 	 */
-	Class<?>[] types() default {};
+	Class<?>[] type() default {};
 
 	/**
 	 * Properties for this Component.

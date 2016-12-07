@@ -29,5 +29,5 @@ public @interface ServiceProperty {
 
 	String value();
 
-	ServicePropertyTypes type() default ServicePropertyTypes.String;
+	PropertyType type() default PropertyType.String;
 }

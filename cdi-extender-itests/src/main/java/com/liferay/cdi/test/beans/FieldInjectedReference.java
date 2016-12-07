@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test.beans;
+package com.liferay.cdi.test.beans;
 
 import java.util.Map;
 
@@ -12,18 +12,17 @@ import org.osgi.service.cdi.annotations.Reference;
 import org.osgi.service.cdi.annotations.ReferenceScope;
 import org.osgi.service.cdi.annotations.Service;
 
-import com.liferay.cdi.weld.container.test.DSServiceBundleScope;
-import com.liferay.cdi.weld.container.test.DSServicePrototypeScope;
+import com.liferay.cdi.test.DSServiceBundleScope;
+import com.liferay.cdi.test.DSServicePrototypeScope;
 
 @ApplicationScoped
 @Service
 @SuppressWarnings("rawtypes")
 public class FieldInjectedReference {
 
-	@ApplicationScoped
 	@Inject
 	@Reference
-	private DSServiceBundleScope bundlescopped;
+	private DSServiceBundleScope bundlescoped;
 
 	@Inject
 	@Reference(target = "(key=value)")

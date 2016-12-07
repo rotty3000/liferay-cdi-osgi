@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test.beans;
+package com.liferay.cdi.test.beans;
 
 import org.osgi.service.cdi.annotations.Service;
 import org.osgi.service.cdi.annotations.ServiceProperty;

@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test.beans;
+package com.liferay.cdi.test.beans;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

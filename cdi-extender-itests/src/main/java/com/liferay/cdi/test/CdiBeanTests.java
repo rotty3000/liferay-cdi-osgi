@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test;
+package com.liferay.cdi.test;
 
 import java.util.Set;
 
@@ -8,12 +8,13 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import org.osgi.framework.ServiceReference;
 
-import com.liferay.cdi.weld.container.test.beans.BundleContextBean;
-import com.liferay.cdi.weld.container.test.beans.ConstructorInjectedService;
-import com.liferay.cdi.weld.container.test.beans.FieldInjectedReference;
-import com.liferay.cdi.weld.container.test.beans.FieldInjectedService;
-import com.liferay.cdi.weld.container.test.beans.MethodInjectedService;
-import com.liferay.cdi.weld.container.test.beans.ServiceWithProperties;
+import com.liferay.cdi.test.beans.BundleContextBean;
+import com.liferay.cdi.test.beans.ConstructorInjectedService;
+import com.liferay.cdi.test.beans.FieldInjectedReference;
+import com.liferay.cdi.test.beans.FieldInjectedService;
+import com.liferay.cdi.test.beans.MethodInjectedService;
+import com.liferay.cdi.test.beans.PlainPojo;
+import com.liferay.cdi.test.beans.ServiceWithProperties;
 
 public class CdiBeanTests extends AbstractTestCase {
 
@@ -95,6 +96,18 @@ public class CdiBeanTests extends AbstractTestCase {
 		BundleContextBean bcb = (BundleContextBean)beanManager.getReference(bean, BundleContextBean.class, ctx);
 		assertNotNull(bcb);
 		assertNotNull(bcb.getBundleContext());
+	}
+
+	public void testGetPlainPojo() throws Exception {
+		BeanManager beanManager = cdiContainer.getBeanManager();
+
+		assertNotNull(beanManager);
+
+		Set<Bean<?>> beans = beanManager.getBeans(PlainPojo.class, any);
+		Bean<?> bean = beanManager.resolve(beans);
+		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+		PlainPojo pp = (PlainPojo)beanManager.getReference(bean, PlainPojo.class, ctx);
+		assertNotNull(pp);
 	}
 
 }

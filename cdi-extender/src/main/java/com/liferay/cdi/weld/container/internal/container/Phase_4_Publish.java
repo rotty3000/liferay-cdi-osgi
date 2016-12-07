@@ -149,7 +149,7 @@ public class Phase_4_Publish {
 	private String[] getClassNames(Service service, Bean<?> bean) {
 		List<String> classNames = new ArrayList<>();
 
-		Class<?>[] types = service == null ? new Class<?>[0] : service.types();
+		Class<?>[] types = service == null ? new Class<?>[0] : service.type();
 
 		if (types.length > 0) {
 			for (Type type : types) {

@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test;
+package com.liferay.cdi.test;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -17,7 +17,8 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cdi.CdiContainer;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.liferay.cdi.weld.container.test.beans.Pojo;
+import com.liferay.cdi.test.beans.Pojo;
+import com.liferay.cdi.test.CdiBeanTests;
 
 import junit.framework.TestCase;
 

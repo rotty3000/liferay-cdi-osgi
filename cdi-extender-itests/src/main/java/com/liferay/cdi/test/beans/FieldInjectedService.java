@@ -1,8 +1,10 @@
-package com.liferay.cdi.weld.container.test.beans;
+package com.liferay.cdi.test.beans;
 
 import javax.inject.Inject;
 
 import org.osgi.service.cdi.annotations.Service;
+
+import com.liferay.cdi.test.beans.Pojo;
 
 @Service
 public class FieldInjectedService {

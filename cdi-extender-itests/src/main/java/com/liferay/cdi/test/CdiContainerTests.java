@@ -1,7 +1,9 @@
-package com.liferay.cdi.weld.container.test;
+package com.liferay.cdi.test;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
+
+import com.liferay.cdi.test.AbstractTestCase;
 
 public class CdiContainerTests extends AbstractTestCase {
 

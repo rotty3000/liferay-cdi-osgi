@@ -1,19 +1,21 @@
-package com.liferay.cdi.weld.container.test.beans;
+package com.liferay.cdi.test.beans;
 
 import javax.inject.Inject;
 
 import org.osgi.service.cdi.annotations.Service;
 
+import com.liferay.cdi.test.beans.Pojo;
+
 @Service
-public class ConstructorInjectedService {
+public class MethodInjectedService {
 
 	@Inject
-	public ConstructorInjectedService(Pojo pojo) {
+	public void setPojo(Pojo pojo) {
 		_pojo = pojo;
 	}
 
 	public String doSomething() {
-		return _pojo.foo("CONSTRUCTOR");
+		return _pojo.foo("METHOD");
 	}
 
 	private Pojo _pojo;

@@ -1,4 +1,4 @@
-package com.liferay.cdi.weld.container.test;
+package com.liferay.cdi.test;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +10,8 @@ import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.cdi.CdiContainer;
 import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.ServiceTracker;
+
+import com.liferay.cdi.test.AbstractTestCase;
 
 public class CdiExtenderTests extends AbstractTestCase {
 

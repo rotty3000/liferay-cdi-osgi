@@ -19,7 +19,7 @@ package org.osgi.service.cdi.annotations;
 /**
  * The possible property types available to {@link ServiceProperty} instances.
  */
-public enum ServicePropertyTypes {
+public enum PropertyType {
 
 	Boolean("Boolean"),
 	Byte("Byte"),
@@ -61,7 +61,7 @@ public enum ServicePropertyTypes {
 	Short_Set("Set<Short>"),
 	String_Set("Set<String>");
 
-	ServicePropertyTypes(String value) {
+	PropertyType(String value) {
 		this.value = value;
 	}
 
