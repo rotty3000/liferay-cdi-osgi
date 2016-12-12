@@ -1,11 +1,21 @@
-package com.liferay.cdi.test;
+package com.liferay.cdi.test.cases;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 
-import com.liferay.cdi.test.AbstractTestCase;
-
 public class CdiContainerTests extends AbstractTestCase {
+
+	@Override
+	protected void setUp() throws Exception {
+		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
+		cdiBundle.start();
+		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		cdiBundle.stop();
+	}
 
 	public void testGetBeanFromCdiContainerService() throws Exception {
 		BeanManager beanManager = cdiContainer.getBeanManager();

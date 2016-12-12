@@ -4,18 +4,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.enterprise.context.ApplicationScoped;
 
-@ApplicationScoped
-public class Pojo {
+import com.liferay.cdi.test.interfaces.Pojo;
 
-	public Pojo() {
+@ApplicationScoped
+public class PojoImpl implements Pojo {
+
+	public PojoImpl() {
 		System.out.println("Created!!!");
 	}
 
+	@Override
 	public String foo(String fooInput) {
 		_counter.incrementAndGet();
 		return "PREFIX" + fooInput;
 	}
 
+	@Override
 	public int getCount() {
 		return _counter.get();
 	}

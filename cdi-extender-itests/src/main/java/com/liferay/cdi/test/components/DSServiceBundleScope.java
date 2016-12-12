@@ -1,9 +1,9 @@
-package com.liferay.cdi.test;
+package com.liferay.cdi.test.components;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import com.liferay.cdi.test.DSServiceBundleScope;
+import com.liferay.cdi.test.components.DSServiceBundleScope;
 
 @Component(
 	property = {

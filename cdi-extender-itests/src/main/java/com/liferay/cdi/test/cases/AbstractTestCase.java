@@ -1,5 +1,6 @@
-package com.liferay.cdi.test;
+package com.liferay.cdi.test.cases;
 
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -17,8 +18,7 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cdi.CdiContainer;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.liferay.cdi.test.beans.Pojo;
-import com.liferay.cdi.test.CdiBeanTests;
+import com.liferay.cdi.test.interfaces.Pojo;
 
 import junit.framework.TestCase;
 
@@ -26,7 +26,6 @@ public class AbstractTestCase extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		cdiContainer = null;
 		cdiContainer = waitForCdiContainer();
 	}
 
@@ -43,6 +42,14 @@ public class AbstractTestCase extends TestCase {
 		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
 		Pojo pojo = (Pojo)beanManager.getReference(bean, Pojo.class, ctx);
 		assertNotNull(pojo);
+	}
+
+	InputStream getBundle(String name) {
+		Class<?> clazz = this.getClass();
+
+		ClassLoader classLoader = clazz.getClassLoader();
+
+		return classLoader.getResourceAsStream(name);
 	}
 
 	ServiceTracker<CdiContainer, CdiContainer> getServiceTracker(long bundleId) throws InvalidSyntaxException {
@@ -70,8 +77,9 @@ public class AbstractTestCase extends TestCase {
 
 	static final Bundle bundle = FrameworkUtil.getBundle(CdiBeanTests.class);
 	static final BundleContext bundleContext = bundle.getBundleContext();
-	static final long timeout = 200000;
+	static final long timeout = 5000;
 
+	Bundle cdiBundle;
 	CdiContainer cdiContainer;
 
 }

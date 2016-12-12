@@ -4,20 +4,27 @@ import javax.inject.Inject;
 
 import org.osgi.service.cdi.annotations.Service;
 
-import com.liferay.cdi.test.beans.Pojo;
+import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.Pojo;
 
-@Service
-public class ConstructorInjectedService {
+@Service(type = {ConstructorInjectedService.class, BeanThingy.class})
+public class ConstructorInjectedService implements BeanThingy<Pojo> {
 
 	@Inject
-	public ConstructorInjectedService(Pojo pojo) {
+	public ConstructorInjectedService(PojoImpl pojo) {
 		_pojo = pojo;
 	}
 
+	@Override
 	public String doSomething() {
 		return _pojo.foo("CONSTRUCTOR");
 	}
 
-	private Pojo _pojo;
+	@Override
+	public com.liferay.cdi.test.interfaces.Pojo getThingy() {
+		return _pojo;
+	}
+
+	private PojoImpl _pojo;
 
 }

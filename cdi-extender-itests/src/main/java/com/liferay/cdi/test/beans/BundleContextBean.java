@@ -5,10 +5,20 @@ import javax.inject.Inject;
 
 import org.osgi.framework.BundleContext;
 
-@ApplicationScoped
-public class BundleContextBean {
+import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.TestQualifier;
 
-	public BundleContext getBundleContext() {
+@ApplicationScoped
+@TestQualifier
+public class BundleContextBean implements BeanThingy<BundleContext> {
+
+	@Override
+	public String doSomething() {
+		return toString();
+	}
+
+	@Override
+	public BundleContext getThingy() {
 		return _bundleContext;
 	}
 

@@ -1,4 +1,4 @@
-package com.liferay.cdi.test;
+package com.liferay.cdi.test.cases;
 
 import java.util.List;
 import java.util.Map;
@@ -11,9 +11,19 @@ import org.osgi.service.cdi.CdiContainer;
 import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.liferay.cdi.test.AbstractTestCase;
-
 public class CdiExtenderTests extends AbstractTestCase {
+
+	@Override
+	protected void setUp() throws Exception {
+		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
+		cdiBundle.start();
+		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		cdiBundle.stop();
+	}
 
 	public void testStopExtender() throws Exception {
 		Bundle cdiExtenderBundle = getCdiExtenderBundle();

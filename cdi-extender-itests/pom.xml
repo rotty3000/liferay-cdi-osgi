@@ -18,6 +18,21 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<includes>
+						<include>META-INF/*</include>
+						<include>OSGI-INF/*</include>
+						<include>OSGI-OPT/*</include>
+						<include>com/liferay/cdi/test/cases/*</include>
+						<include>com/liferay/cdi/test/components/*</include>
+						<include>com/liferay/cdi/test/interfaces/*</include>
+						<include>*.jar</include>
+					</includes>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-maven-plugin</artifactId>
 			</plugin>

@@ -12,13 +12,14 @@ import org.osgi.service.cdi.annotations.Reference;
 import org.osgi.service.cdi.annotations.ReferenceScope;
 import org.osgi.service.cdi.annotations.Service;
 
-import com.liferay.cdi.test.DSServiceBundleScope;
-import com.liferay.cdi.test.DSServicePrototypeScope;
+import com.liferay.cdi.test.components.DSServiceBundleScope;
+import com.liferay.cdi.test.components.DSServicePrototypeScope;
+import com.liferay.cdi.test.interfaces.FieldInjectedReference;
 
 @ApplicationScoped
-@Service
+@Service(type = {FieldInjectedReferenceImpl.class, FieldInjectedReference.class})
 @SuppressWarnings("rawtypes")
-public class FieldInjectedReference {
+public class FieldInjectedReferenceImpl implements FieldInjectedReference {
 
 	@Inject
 	@Reference
@@ -44,18 +45,22 @@ public class FieldInjectedReference {
 	@Reference(service = DSServicePrototypeScope.class, target = "(key=value)")
 	private Map<String, Object> properties;
 
+	@Override
 	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
+	@Override
 	public ServiceReference<DSServicePrototypeScope> getReference1() {
 		return reference1;
 	}
 
+	@Override
 	public ServiceReference getReference2() {
 		return reference2;
 	}
 
+	@Override
 	public DSServicePrototypeScope getService() {
 		return service;
 	}
