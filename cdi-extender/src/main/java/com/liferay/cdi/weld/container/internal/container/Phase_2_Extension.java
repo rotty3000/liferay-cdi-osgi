@@ -56,7 +56,7 @@ public class Phase_2_Extension {
 
 	public void close() {
 		_cdiHelper.fireCdiEvent(
-			new CdiEvent(CdiEvent.Type.DESTROYING, _bundleContext.getBundle(), _cdiHelper.getExtenderBundle()));
+			new CdiEvent(CdiEvent.Type.DESTROYING, _bundle, _cdiHelper.getExtenderBundle()));
 
 		if (_extensionTracker != null) {
 			_extensionTracker.close();
@@ -66,7 +66,7 @@ public class Phase_2_Extension {
 		}
 
 		_cdiHelper.fireCdiEvent(
-			new CdiEvent(CdiEvent.Type.DESTROYED, _bundleContext.getBundle(), _cdiHelper.getExtenderBundle()));
+			new CdiEvent(CdiEvent.Type.DESTROYED, _bundle, _cdiHelper.getExtenderBundle()));
 	}
 
 	public void open() {

@@ -67,7 +67,14 @@ public class Phase_4_Publish {
 
 	public void close() {
 		for (ServiceRegistration<?> registration : _registrations) {
-			registration.unregister();
+			try {
+				registration.unregister();
+			}
+			catch (IllegalStateException ise) {
+				if (_log.isTraceEnabled()) {
+					_log.trace("Service already unregistered {}", registration);
+				}
+			}
 		}
 
 		_registrations.clear();
