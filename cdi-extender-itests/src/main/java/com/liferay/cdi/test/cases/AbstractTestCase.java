@@ -21,7 +21,8 @@ import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.cdi.CdiContainer;
-import org.osgi.service.cdi.Constants;
+import org.osgi.service.cdi.CdiEvent;
+import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.util.tracker.ServiceTracker;
 
 import com.liferay.cdi.test.interfaces.Pojo;
@@ -67,7 +68,7 @@ public class AbstractTestCase extends TestCase {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
 			String extender = (String)attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE);
 
-			if (Constants.CDI_EXTENDER.equals(extender)) {
+			if (CdiExtenderConstants.CDI_EXTENDER.equals(extender)) {
 				return wire.getProvider().getBundle();
 			}
 		}
@@ -77,7 +78,8 @@ public class AbstractTestCase extends TestCase {
 
 	ServiceTracker<CdiContainer, CdiContainer> getServiceTracker(long bundleId) throws InvalidSyntaxException {
 		Filter filter = bundleContext.createFilter(
-			"(&(objectClass=" + CdiContainer.class.getName() + ")(service.bundleid=" + bundleId + "))");
+			"(&(objectClass=" + CdiContainer.class.getName() + ")(service.bundleid=" + bundleId + ")(" +
+				CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE + "=" + CdiEvent.State.CREATED + "))");
 
 		ServiceTracker<CdiContainer, CdiContainer> serviceTracker = new ServiceTracker<>(bundleContext, filter, null);
 

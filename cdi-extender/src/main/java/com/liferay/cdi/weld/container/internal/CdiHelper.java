@@ -16,17 +16,25 @@
 
 package com.liferay.cdi.weld.container.internal;
 
+import java.util.Hashtable;
 import java.util.Map;
 
 import javax.enterprise.inject.Any;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.cdi.CdiContainer;
 import org.osgi.service.cdi.CdiEvent;
+import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.service.cdi.CdiListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.liferay.cdi.weld.container.internal.container.CdiContainerService;
 
 public class CdiHelper {
 
@@ -34,25 +42,51 @@ public class CdiHelper {
 		private static final long serialVersionUID = 1L;
 	};
 
-	public CdiHelper(Bundle extenderBundle, Map<ServiceReference<CdiListener>, CdiListener> listeners) {
+	public CdiHelper(
+		Bundle extenderBundle, Map<ServiceReference<CdiListener>, CdiListener> listeners, BundleContext bundleContext) {
+
 		_extenderBundle = extenderBundle;
 		_listeners = listeners;
+
+		_cdiContainerService = new CdiContainerService();
+
+		Hashtable<String, Object> properties = new Hashtable<>();
+
+		properties.put(CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE, CdiEvent.State.CREATING);
+
+		_cdiContainerRegistration = bundleContext.registerService(
+			CdiContainer.class, _cdiContainerService, properties);
+	}
+
+	public void close() {
+		try {
+			_cdiContainerRegistration.unregister();
+		}
+		catch (Exception e) {
+			if (_log.isTraceEnabled()) {
+				_log.trace("Service already unregistered {}", _cdiContainerRegistration);
+			}
+		}
 	}
 
 	public Bundle getExtenderBundle() {
 		return _extenderBundle;
 	}
 
-	public CdiEvent getLastEvent() {
-		return _lastEvent;
+	public void fireCdiEvent(CdiEvent event) {
+		fireCdiEvent(event, null);
 	}
 
-	public void fireCdiEvent(CdiEvent event) {
-		_lastEvent = event;
-
+	public void fireCdiEvent(CdiEvent event, BeanManager beanManager) {
 		if (_log.isDebugEnabled()) {
 			_log.debug("CDIe - Event {}", event);
 		}
+
+		if (beanManager != null) {
+			_cdiContainerService.setBeanManager(beanManager);
+		}
+
+		updateState(event);
 
 		for (CdiListener listener : _listeners.values()) {
 			try {
@@ -66,10 +100,29 @@ public class CdiHelper {
 		}
 	}
 
+	private void updateState(CdiEvent event) {
+		ServiceReference<CdiContainer> reference = _cdiContainerRegistration.getReference();
+
+		if (event.getType() == reference.getProperty(CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE)) {
+			return;
+		}
+
+		Hashtable<String, Object> properties = new Hashtable<>();
+
+		for (String key : reference.getPropertyKeys()) {
+			properties.put(key, reference.getProperty(key));
+		}
+
+		properties.put(CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE, event.getType());
+
+		_cdiContainerRegistration.setProperties(properties);
+	}
+
 	private static final Logger _log = LoggerFactory.getLogger(CdiHelper.class);
 
+	private final ServiceRegistration<CdiContainer> _cdiContainerRegistration;
+	private final CdiContainerService _cdiContainerService;
 	private final Bundle _extenderBundle;
-	private volatile CdiEvent _lastEvent;
 	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;
 
 }

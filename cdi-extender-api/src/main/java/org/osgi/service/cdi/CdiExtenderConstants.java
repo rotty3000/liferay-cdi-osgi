@@ -17,11 +17,16 @@
 package org.osgi.service.cdi;
 
 /**
- * Defines CDI constants.
+ * Defines CDI Extender constants.
  */
-public class Constants {
+public class CdiExtenderConstants {
+	private CdiExtenderConstants() {
+		// non-instantiable
+	}
 
 	public static final String CDI_EXTENDER = "osgi.cdi";
+
+	public static final String CDI_EXTENDER_CONTAINER_STATE = "osgi.cdi.container.state";
 
 	public static final String CDI_EXTENSION = "osgi.cdi.extension";
 

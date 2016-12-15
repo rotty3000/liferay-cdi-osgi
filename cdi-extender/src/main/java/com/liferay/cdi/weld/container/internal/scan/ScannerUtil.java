@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.cdi.Constants;
+import org.osgi.service.cdi.CdiExtenderConstants;
 
 public class ScannerUtil {
 
@@ -43,7 +43,7 @@ public class ScannerUtil {
 
 		List<String> beanClasses = new ArrayList<String>();
 
-		List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.CDI_EXTENDER);
+		List<BundleRequirement> requirements = bundleWiring.getRequirements(CdiExtenderConstants.CDI_EXTENDER);
 
 		for (BundleRequirement requirement : requirements) {
 			Map<String, Object> attributes = requirement.getAttributes();

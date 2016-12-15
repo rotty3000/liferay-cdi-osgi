@@ -90,7 +90,7 @@ public class Phase_3_Reference {
 
 		if (!_referenceDependencies.isEmpty()) {
 			_cdiHelper.fireCdiEvent(
-				new CdiEvent(CdiEvent.Type.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
+				new CdiEvent(CdiEvent.State.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
 
 			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
@@ -149,6 +149,9 @@ public class Phase_3_Reference {
 		public void removedService(ServiceReference<Object> reference, ReferenceDependency referenceDependency) {
 			if (_referenceDependencies.isEmpty()) {
 				_publishPhase.close();
+
+				_cdiHelper.fireCdiEvent(
+					new CdiEvent(CdiEvent.State.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
 			}
 			_referenceDependencies.add(referenceDependency);
 		}

@@ -23,7 +23,7 @@ import org.osgi.framework.Bundle;
  */
 public class CdiEvent {
 
-	public static enum Type {
+	public static enum State {
 		CREATING,
 		CREATED,
 		DESTROYING,
@@ -38,15 +38,15 @@ public class CdiEvent {
 		this(event.getType(), event.getBundle(), event.getExtenderBundle(), event.getCause(), replay);
 	}
 
-	public CdiEvent(Type type, Bundle bundle, Bundle extenderBundle) {
+	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle) {
 		this(type, bundle, extenderBundle, null, false);
 	}
 
-	public CdiEvent(Type type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
+	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
 		this(type, bundle, extenderBundle, null, false);
 	}
 
-	private CdiEvent(Type type, Bundle bundle, Bundle extenderBundle, Throwable cause, boolean replay) {
+	private CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause, boolean replay) {
 		this.type = type;
 		this.bundle = bundle;
 		this.extenderBundle = extenderBundle;
@@ -93,7 +93,7 @@ public class CdiEvent {
 		return timestamp;
 	}
 
-	public Type getType() {
+	public State getType() {
 		return type;
 	}
 
@@ -111,7 +111,7 @@ public class CdiEvent {
 	private final Bundle extenderBundle;
 	private final boolean replay;
 	private final long timestamp;
-	private final Type type;
+	private final State type;
 	private final String string;
 
 }

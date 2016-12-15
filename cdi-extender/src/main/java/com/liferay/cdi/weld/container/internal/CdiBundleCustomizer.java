@@ -25,8 +25,9 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.service.cdi.CdiEvent;
+import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.service.cdi.CdiListener;
-import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			_log.debug("CDIe - bundle detected {}", bundle);
 		}
 
-		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners);
+		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners, bundle.getBundleContext());
 
 		try {
 			Phase_1_Init phase1 = new Phase_1_Init(bundle, cdiHelper);
@@ -60,9 +61,9 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			return phase1;
 		}
 		catch (Throwable t) {
-			if (_log.isErrorEnabled()) {
-				_log.error("CDIe - Exception during init", t);
-			}
+			cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.State.FAILURE, bundle, _extenderBundle));
+
+			cdiHelper.close();
 		}
 
 		return null;
@@ -89,7 +90,7 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			Map<String, Object> attributes = bundleWire.getCapability().getAttributes();
 
 			if (attributes.containsKey(ExtenderNamespace.EXTENDER_NAMESPACE) &&
-				attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE).equals(Constants.CDI_EXTENDER)) {
+				attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE).equals(CdiExtenderConstants.CDI_EXTENDER)) {
 
 				Bundle providerWiringBundle = bundleWire.getProviderWiring().getBundle();
 

@@ -33,7 +33,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cdi.CdiEvent;
-import org.osgi.service.cdi.Constants;
+import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -56,7 +56,7 @@ public class Phase_2_Extension {
 
 	public void close() {
 		_cdiHelper.fireCdiEvent(
-			new CdiEvent(CdiEvent.Type.DESTROYING, _bundle, _cdiHelper.getExtenderBundle()));
+			new CdiEvent(CdiEvent.State.DESTROYING, _bundle, _cdiHelper.getExtenderBundle()));
 
 		if (_extensionTracker != null) {
 			_extensionTracker.close();
@@ -66,17 +66,19 @@ public class Phase_2_Extension {
 		}
 
 		_cdiHelper.fireCdiEvent(
-			new CdiEvent(CdiEvent.Type.DESTROYED, _bundle, _cdiHelper.getExtenderBundle()));
+			new CdiEvent(CdiEvent.State.DESTROYED, _bundle, _cdiHelper.getExtenderBundle()));
+
+		_cdiHelper.close();
 	}
 
 	public void open() {
-		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.Type.CREATING, _bundle, _cdiHelper.getExtenderBundle()));
+		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.State.CREATING, _bundle, _cdiHelper.getExtenderBundle()));
 
 		findExtensionDependencies();
 
 		if (!_extensionDependencies.isEmpty()) {
 			_cdiHelper.fireCdiEvent(
-				new CdiEvent(CdiEvent.Type.WAITING_FOR_EXTENSIONS, _bundle, _cdiHelper.getExtenderBundle()));
+				new CdiEvent(CdiEvent.State.WAITING_FOR_EXTENSIONS, _bundle, _cdiHelper.getExtenderBundle()));
 
 			Filter filter = FilterBuilder.createExtensionFilter(_extensionDependencies);
 
@@ -90,12 +92,12 @@ public class Phase_2_Extension {
 	}
 
 	private void findExtensionDependencies() {
-		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(Constants.CDI_EXTENSION);
+		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(CdiExtenderConstants.CDI_EXTENSION);
 
 		for (BundleWire wire : requiredWires) {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
 
-			String extension = (String)attributes.get(Constants.CDI_EXTENSION_ATTRIBUTE);
+			String extension = (String)attributes.get(CdiExtenderConstants.CDI_EXTENSION_ATTRIBUTE);
 
 			if (extension != null) {
 				ExtensionDependency extensionDependency = new ExtensionDependency(
@@ -151,6 +153,9 @@ public class Phase_2_Extension {
 		public void removedService(ServiceReference<Extension> reference, ExtensionDependency extentionDependency) {
 			if (_extensionDependencies.isEmpty()) {
 				_phase3.close();
+
+				_cdiHelper.fireCdiEvent(
+					new CdiEvent(CdiEvent.State.WAITING_FOR_EXTENSIONS, _bundle, _cdiHelper.getExtenderBundle()));
 			}
 			_extensions.remove(reference);
 			_bundleContext.ungetService(reference);

@@ -79,17 +79,6 @@ public class Phase_4_Publish {
 
 		_registrations.clear();
 
-		if (_cdiContainerRegistration != null) {
-			try {
-				_cdiContainerRegistration.unregister();
-			}
-			catch (Exception e) {
-				if (_log.isTraceEnabled()) {
-					_log.trace("Service already unregistered {}", _cdiContainerRegistration);
-				}
-			}
-		}
-
 		if (_beanManagerRegistration != null) {
 			try {
 				_beanManagerRegistration.unregister();
@@ -114,7 +103,7 @@ public class Phase_4_Publish {
 	}
 
 	public void open(WeldBootstrap bootstrap) {
-		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.Type.SATISFIED, _bundle, _cdiHelper.getExtenderBundle()));
+		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.State.SATISFIED, _bundle, _cdiHelper.getExtenderBundle()));
 
 		bootstrap.validateBeans();
 		bootstrap.endInitialization();
@@ -127,30 +116,17 @@ public class Phase_4_Publish {
 			processBeans(beanManager, allBeans);
 		}
 
-		Dictionary<String, Object> properties = new Hashtable<>();
-
-		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
-		properties.put("osgi.cdi.container.version", _bundle.getVersion());
-
 		_beanManagerRegistration = _bundle.getBundleContext().registerService(
-			BeanManager.class, beanManager, properties);
+			BeanManager.class, beanManager, null);
 
-		properties = new Hashtable<>();
-		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
-		properties.put("osgi.cdi.container.version", _bundle.getVersion());
+		Dictionary<String, Object> properties = new Hashtable<>();
 		properties.put(JNDIConstants.JNDI_URLSCHEME, "java");
 
 		_objectFactoryRegistration = _bundle.getBundleContext().registerService(
 			ObjectFactory.class, new JndiObjectFactory(beanManager), properties);
 
-		properties = new Hashtable<>();
-		properties.put("osgi.cdi.container.symbolicname", _bundle.getSymbolicName());
-		properties.put("osgi.cdi.container.version", _bundle.getVersion());
-
-		_cdiContainerRegistration = _bundle.getBundleContext().registerService(
-			CdiContainer.class, new CdiContainerService(beanManager), properties);
-
-		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.Type.CREATED, _bundle, _cdiHelper.getExtenderBundle()));
+		_cdiHelper.fireCdiEvent(
+			new CdiEvent(CdiEvent.State.CREATED, _bundle, _cdiHelper.getExtenderBundle()), beanManager);
 	}
 
 	private String[] getClassNames(Service service, Bean<?> bean) {
@@ -308,21 +284,6 @@ public class Phase_4_Publish {
 		private BeanManager _beanManager;
 		private Context _context;
 		private CreationalContext _creationalContext;
-
-	}
-
-	private class CdiContainerService implements CdiContainer {
-
-		public CdiContainerService(BeanManager beanManager) {
-			_beanManager = beanManager;
-		}
-
-		@Override
-		public BeanManager getBeanManager() {
-			return _beanManager;
-		}
-
-		private final BeanManager _beanManager;
 
 	}
 
