@@ -35,7 +35,7 @@ public class AbstractTestCase extends TestCase {
 		assertFalse(beans.isEmpty());
 		Iterator<Bean<?>> iterator = beans.iterator();
 		Bean<?> bean = iterator.next();
-		assertTrue(bean.getBeanClass().isAssignableFrom(Pojo.class));
+		assertTrue(Pojo.class.isAssignableFrom(bean.getBeanClass()));
 		assertFalse(iterator.hasNext());
 
 		bean = beanManager.resolve(beans);

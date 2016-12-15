@@ -1,7 +1,11 @@
 package com.liferay.cdi.test.cases;
 
+import java.util.Hashtable;
+
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
+
+import org.osgi.service.jndi.JNDIConstants;
 
 public class CdiContainerTests extends AbstractTestCase {
 
@@ -25,7 +29,9 @@ public class CdiContainerTests extends AbstractTestCase {
 	}
 
 	public void testGetBeanManagerThroughJNDI() throws Exception {
-		InitialContext context = new InitialContext();
+		Hashtable<String, Object> env = new Hashtable<>();
+		env.put(JNDIConstants.BUNDLE_CONTEXT, cdiBundle.getBundleContext());
+		InitialContext context = new InitialContext(env);
 
 		BeanManager beanManager = (BeanManager)context.lookup("java:comp/BeanManager");
 

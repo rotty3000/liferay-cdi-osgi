@@ -17,7 +17,6 @@ public class CdiExtenderTests extends AbstractTestCase {
 	protected void setUp() throws Exception {
 		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
 		cdiBundle.start();
-		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
 	}
 
 	@Override
@@ -28,23 +27,26 @@ public class CdiExtenderTests extends AbstractTestCase {
 	public void testStopExtender() throws Exception {
 		Bundle cdiExtenderBundle = getCdiExtenderBundle();
 
-		ServiceTracker<CdiContainer,CdiContainer> serviceTracker = getServiceTracker(bundle.getBundleId());
+		ServiceTracker<CdiContainer,CdiContainer> serviceTracker = getServiceTracker(cdiBundle.getBundleId());
 
-		assertNotNull(serviceTracker.waitForService(timeout));
+		try {
+			assertNotNull(serviceTracker.waitForService(timeout));
 
-		cdiExtenderBundle.stop();
+			cdiExtenderBundle.stop();
 
-		assertTrue(serviceTracker.isEmpty());
+			assertTrue(serviceTracker.isEmpty());
 
-		cdiExtenderBundle.start();
+			cdiExtenderBundle.start();
 
-		assertNotNull(serviceTracker.waitForService(timeout));
-
-		serviceTracker.close();
+			assertNotNull(serviceTracker.waitForService(timeout));
+		}
+		finally {
+			serviceTracker.close();
+		}
 	}
 
 	public Bundle getCdiExtenderBundle() {
-		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
+		BundleWiring bundleWiring = cdiBundle.adapt(BundleWiring.class);
 
 		List<BundleWire> requiredWires = bundleWiring.getRequiredWires(ExtenderNamespace.EXTENDER_NAMESPACE);
 

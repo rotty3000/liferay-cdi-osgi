@@ -122,13 +122,15 @@ public class CdiBeanTests extends AbstractTestCase {
 
 		assertNotNull(beanManager);
 
-		Set<Bean<?>> beans = beanManager.getBeans(null, new AnnotationLiteral<TestQualifier>() {});
+		@SuppressWarnings("serial")
+		Set<Bean<?>> beans = beanManager.getBeans(Object.class, new AnnotationLiteral<TestQualifier>() {});
 		Bean<?> bean = beanManager.resolve(beans);
 		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
-		BeanThingy bcb = (BeanThingy)beanManager.getReference(bean, BeanThingy.class, ctx);
+		Object bcb = beanManager.getReference(bean, Object.class, ctx);
 		assertNotNull(bcb);
-		assertNotNull(bcb.getThingy());
-		assertTrue(bcb.getThingy() instanceof BundleContext);
+		BeanThingy<BundleContext> bti = (BeanThingy<BundleContext>)bcb;
+		assertNotNull(bti.getThingy());
+		assertTrue(bti.getThingy() instanceof BundleContext);
 	}
 
 }
