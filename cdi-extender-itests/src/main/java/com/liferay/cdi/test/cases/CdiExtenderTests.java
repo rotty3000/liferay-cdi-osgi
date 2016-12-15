@@ -1,14 +1,7 @@
 package com.liferay.cdi.test.cases;
 
-import java.util.List;
-import java.util.Map;
-
 import org.osgi.framework.Bundle;
-import org.osgi.framework.wiring.BundleWire;
-import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.cdi.CdiContainer;
-import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.ServiceTracker;
 
 public class CdiExtenderTests extends AbstractTestCase {
@@ -21,7 +14,7 @@ public class CdiExtenderTests extends AbstractTestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		cdiBundle.stop();
+		cdiBundle.uninstall();
 	}
 
 	public void testStopExtender() throws Exception {
@@ -43,23 +36,6 @@ public class CdiExtenderTests extends AbstractTestCase {
 		finally {
 			serviceTracker.close();
 		}
-	}
-
-	public Bundle getCdiExtenderBundle() {
-		BundleWiring bundleWiring = cdiBundle.adapt(BundleWiring.class);
-
-		List<BundleWire> requiredWires = bundleWiring.getRequiredWires(ExtenderNamespace.EXTENDER_NAMESPACE);
-
-		for (BundleWire wire : requiredWires) {
-			Map<String, Object> attributes = wire.getCapability().getAttributes();
-			String extender = (String)attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE);
-
-			if (Constants.CDI_EXTENDER.equals(extender)) {
-				return wire.getProvider().getBundle();
-			}
-		}
-
-		return null;
 	}
 
 }

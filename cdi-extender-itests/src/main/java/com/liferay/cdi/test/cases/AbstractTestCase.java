@@ -2,6 +2,8 @@ package com.liferay.cdi.test.cases;
 
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -15,7 +17,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.namespace.extender.ExtenderNamespace;
 import org.osgi.service.cdi.CdiContainer;
+import org.osgi.service.cdi.Constants;
 import org.osgi.util.tracker.ServiceTracker;
 
 import com.liferay.cdi.test.interfaces.Pojo;
@@ -50,6 +56,23 @@ public class AbstractTestCase extends TestCase {
 		ClassLoader classLoader = clazz.getClassLoader();
 
 		return classLoader.getResourceAsStream(name);
+	}
+
+	Bundle getCdiExtenderBundle() {
+		BundleWiring bundleWiring = cdiBundle.adapt(BundleWiring.class);
+
+		List<BundleWire> requiredWires = bundleWiring.getRequiredWires(ExtenderNamespace.EXTENDER_NAMESPACE);
+
+		for (BundleWire wire : requiredWires) {
+			Map<String, Object> attributes = wire.getCapability().getAttributes();
+			String extender = (String)attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE);
+
+			if (Constants.CDI_EXTENDER.equals(extender)) {
+				return wire.getProvider().getBundle();
+			}
+		}
+
+		return null;
 	}
 
 	ServiceTracker<CdiContainer, CdiContainer> getServiceTracker(long bundleId) throws InvalidSyntaxException {

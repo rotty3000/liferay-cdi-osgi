@@ -27,7 +27,7 @@ public class CdiBeanTests extends AbstractTestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		cdiBundle.stop();
+		cdiBundle.uninstall();
 	}
 
 	public void testConstructorInjectedService() throws Exception {
