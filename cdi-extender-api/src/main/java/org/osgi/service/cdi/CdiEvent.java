@@ -35,7 +35,7 @@ public class CdiEvent {
 	}
 
 	public CdiEvent(CdiEvent event, boolean replay) {
-		this(event.getType(), event.getBundle(), event.getExtenderBundle(), event.getCause(), replay);
+		this(event.getState(), event.getBundle(), event.getExtenderBundle(), event.getCause(), replay);
 	}
 
 	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle) {
@@ -93,7 +93,7 @@ public class CdiEvent {
 		return timestamp;
 	}
 
-	public State getType() {
+	public State getState() {
 		return type;
 	}
 

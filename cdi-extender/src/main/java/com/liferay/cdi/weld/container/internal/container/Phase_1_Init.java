@@ -24,13 +24,13 @@ import org.jboss.weld.xml.BeansXmlParser;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.liferay.cdi.weld.container.internal.CdiHelper;
+import com.liferay.cdi.weld.container.internal.CdiContainerState;
 import com.liferay.cdi.weld.container.internal.scan.ScanResults;
 import com.liferay.cdi.weld.container.internal.scan.ScannerUtil;
 
 public class Phase_1_Init {
 
-	public Phase_1_Init(Bundle bundle, CdiHelper cdiHelper) {
+	public Phase_1_Init(Bundle bundle, CdiContainerState cdiContainerState) {
 		String deploymentArchiveId = bundle.getSymbolicName() + ":" + bundle.getBundleId();
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 
@@ -40,9 +40,9 @@ public class Phase_1_Init {
 		BeansXml beansXml = beansXmlParser.parse(scanResults.getBeanDescriptorURLs());
 
 		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
-			bundleWiring, deploymentArchiveId, beanClasses, beansXml, cdiHelper);
+			bundleWiring, deploymentArchiveId, beanClasses, beansXml, cdiContainerState.getExtenderBundle());
 
-		_phase2 = new Phase_2_Extension(bundle, cdiHelper, beanDeploymentArchive);
+		_phase2 = new Phase_2_Extension(bundle, cdiContainerState, beanDeploymentArchive);
 	}
 
 	public void close() {

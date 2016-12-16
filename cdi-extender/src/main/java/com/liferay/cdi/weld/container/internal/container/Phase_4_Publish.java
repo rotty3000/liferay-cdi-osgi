@@ -51,16 +51,16 @@ import org.osgi.service.jndi.JNDIConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.weld.container.internal.CdiHelper;
+import com.liferay.cdi.weld.container.internal.CdiContainerState;
 import com.liferay.cdi.weld.container.internal.jndi.JndiObjectFactory;
 
 public class Phase_4_Publish {
 
 	public Phase_4_Publish(
-		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive) {
+		Bundle bundle, CdiContainerState cdiContainerState, BeanDeploymentArchive beanDeploymentArchive) {
 
 		_bundle = bundle;
-		_cdiHelper = cdiHelper;
+		_cdiContainerState = cdiContainerState;
 		_beanDeploymentArchive = beanDeploymentArchive;
 		_bundleContext = _bundle.getBundleContext();
 	}
@@ -103,14 +103,14 @@ public class Phase_4_Publish {
 	}
 
 	public void open(WeldBootstrap bootstrap) {
-		_cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.State.SATISFIED, _bundle, _cdiHelper.getExtenderBundle()));
+		_cdiContainerState.fire(CdiEvent.State.SATISFIED);
 
 		bootstrap.validateBeans();
 		bootstrap.endInitialization();
 
 		BeanManager beanManager = bootstrap.getManager(_beanDeploymentArchive);
 
-		Set<Bean<?>> allBeans = beanManager.getBeans(Object.class, CdiHelper.ANY);
+		Set<Bean<?>> allBeans = beanManager.getBeans(Object.class, CdiContainerState.ANY);
 
 		if (!allBeans.isEmpty()) {
 			processBeans(beanManager, allBeans);
@@ -125,8 +125,7 @@ public class Phase_4_Publish {
 		_objectFactoryRegistration = _bundle.getBundleContext().registerService(
 			ObjectFactory.class, new JndiObjectFactory(beanManager), properties);
 
-		_cdiHelper.fireCdiEvent(
-			new CdiEvent(CdiEvent.State.CREATED, _bundle, _cdiHelper.getExtenderBundle()), beanManager);
+		_cdiContainerState.fire(CdiEvent.State.CREATED, beanManager);
 	}
 
 	private String[] getClassNames(Service service, Bean<?> bean) {
@@ -228,7 +227,7 @@ public class Phase_4_Publish {
 	private final BeanDeploymentArchive _beanDeploymentArchive;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
-	private final CdiHelper _cdiHelper;
+	private final CdiContainerState _cdiContainerState;
 	private final List<ServiceRegistration<?>> _registrations = new CopyOnWriteArrayList<>();
 
 	private ServiceRegistration<BeanManager> _beanManagerRegistration;

@@ -36,30 +36,31 @@ import org.osgi.service.cdi.CdiEvent;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-import com.liferay.cdi.weld.container.internal.CdiHelper;
+import com.liferay.cdi.weld.container.internal.CdiContainerState;
 
 public class Phase_3_Reference {
 
 	public Phase_3_Reference(
-		Bundle bundle, CdiHelper cdiHelper, BeanDeploymentArchive beanDeploymentArchive,
+		Bundle bundle, CdiContainerState cdiContainerState, BeanDeploymentArchive beanDeploymentArchive,
 		Map<ServiceReference<Extension>, Metadata<Extension>> extensions) {
 
 		_bundle = bundle;
-		_cdiHelper = cdiHelper;
+		_cdiContainerState = cdiContainerState;
 		_beanDeploymentArchive = beanDeploymentArchive;
 		_extensions = extensions;
 		_bundleContext = _bundle.getBundleContext();
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
 
-		_publishPhase = new Phase_4_Publish(_bundle, _cdiHelper, _beanDeploymentArchive);
+		_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _beanDeploymentArchive);
 	}
 
 	public void close() {
-		_publishPhase.close();
-
 		if (_serviceTracker != null) {
 			_serviceTracker.close();
 			_serviceTracker = null;
+		}
+		else {
+			_publishPhase.close();
 		}
 	}
 
@@ -89,8 +90,7 @@ public class Phase_3_Reference {
 		bootstrap.deployBeans();
 
 		if (!_referenceDependencies.isEmpty()) {
-			_cdiHelper.fireCdiEvent(
-				new CdiEvent(CdiEvent.State.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
+			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
 
 			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
@@ -107,7 +107,7 @@ public class Phase_3_Reference {
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
 	private final BundleWiring _bundleWiring;
-	private final CdiHelper _cdiHelper;
+	private final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
 	private final Phase_4_Publish _publishPhase;
 	private final List<ReferenceDependency> _referenceDependencies = new CopyOnWriteArrayList<>();
@@ -150,8 +150,7 @@ public class Phase_3_Reference {
 			if (_referenceDependencies.isEmpty()) {
 				_publishPhase.close();
 
-				_cdiHelper.fireCdiEvent(
-					new CdiEvent(CdiEvent.State.WAITING_FOR_SERVICES, _bundle, _cdiHelper.getExtenderBundle()));
+				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
 			}
 			_referenceDependencies.add(referenceDependency);
 		}

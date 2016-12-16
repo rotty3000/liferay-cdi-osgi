@@ -51,7 +51,7 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			_log.debug("CDIe - bundle detected {}", bundle);
 		}
 
-		CdiHelper cdiHelper = new CdiHelper(_extenderBundle, _listeners, bundle.getBundleContext());
+		CdiContainerState cdiHelper = new CdiContainerState(bundle, _extenderBundle, _listeners);
 
 		try {
 			Phase_1_Init phase1 = new Phase_1_Init(bundle, cdiHelper);
@@ -61,7 +61,7 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			return phase1;
 		}
 		catch (Throwable t) {
-			cdiHelper.fireCdiEvent(new CdiEvent(CdiEvent.State.FAILURE, bundle, _extenderBundle));
+			cdiHelper.fire(new CdiEvent(CdiEvent.State.FAILURE, bundle, _extenderBundle));
 
 			cdiHelper.close();
 		}
