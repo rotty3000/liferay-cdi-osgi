@@ -17,6 +17,7 @@
 package com.liferay.cdi.weld.container.internal.container;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,6 +26,7 @@ import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.osgi.framework.Bundle;
@@ -41,30 +43,35 @@ import com.liferay.cdi.weld.container.internal.CdiContainerState;
 public class Phase_3_Reference {
 
 	public Phase_3_Reference(
-		Bundle bundle, CdiContainerState cdiContainerState, BeanDeploymentArchive beanDeploymentArchive,
-		Map<ServiceReference<Extension>, Metadata<Extension>> extensions) {
+		Bundle bundle, CdiContainerState cdiContainerState, Map<ServiceReference<Extension>, 
+		Metadata<Extension>> extensions, Collection<String> beanClasses, BeansXml beansXml) {
 
 		_bundle = bundle;
 		_cdiContainerState = cdiContainerState;
-		_beanDeploymentArchive = beanDeploymentArchive;
 		_extensions = extensions;
 		_bundleContext = _bundle.getBundleContext();
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
-
-		_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _beanDeploymentArchive);
+		_beanClasses = beanClasses;
+		_beansXml = beansXml;
 	}
 
 	public void close() {
 		if (_serviceTracker != null) {
 			_serviceTracker.close();
+
 			_serviceTracker = null;
 		}
 		else {
 			_publishPhase.close();
+
+			_publishPhase = null;
 		}
 	}
 
 	public void open() {
+		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
+			_bundleWiring, _cdiContainerState.getId(), _beanClasses, _beansXml, _cdiContainerState.getExtenderBundle());
+		
 		WeldBootstrap bootstrap = new WeldBootstrap();
 
 		List<Metadata<Extension>> extensions = new ArrayList<>();
@@ -83,41 +90,51 @@ public class Phase_3_Reference {
 			extensions.add(meta);
 		}
 
-		Deployment deployment = new BundleDeployment(extensions, _beanDeploymentArchive);
+		Deployment deployment = new BundleDeployment(extensions, beanDeploymentArchive);
 
 		bootstrap.startContainer(new SimpleEnvironment(), deployment);
 		bootstrap.startInitialization();
-		bootstrap.deployBeans();
+		try {
+			bootstrap.deployBeans();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
 
 		if (!_referenceDependencies.isEmpty()) {
 			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
 
 			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
-			_serviceTracker = new ServiceTracker<>(_bundleContext, filter, new ReferencePhaseCustomizer(bootstrap));
+			_serviceTracker = new ServiceTracker<>(
+				_bundleContext, filter, new ReferencePhaseCustomizer(bootstrap, beanDeploymentArchive));
 
 			_serviceTracker.open();
 		}
 		else {
+			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, beanDeploymentArchive);
+
 			_publishPhase.open(bootstrap);
 		}
 	}
 
-	private final BeanDeploymentArchive _beanDeploymentArchive;
+	private final Collection<String> _beanClasses;
+	private final BeansXml _beansXml;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
 	private final BundleWiring _bundleWiring;
 	private final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
-	private final Phase_4_Publish _publishPhase;
+	private Phase_4_Publish _publishPhase;
 	private final List<ReferenceDependency> _referenceDependencies = new CopyOnWriteArrayList<>();
 
 	private ServiceTracker<?, ?> _serviceTracker;
 
 	private class ReferencePhaseCustomizer implements ServiceTrackerCustomizer<Object, ReferenceDependency> {
 
-		public ReferencePhaseCustomizer(WeldBootstrap bootstrap) {
+		public ReferencePhaseCustomizer(WeldBootstrap bootstrap, BeanDeploymentArchive beanDeploymentArchive) {
 			_bootstrap = bootstrap;
+			_beanDeploymentArchive = beanDeploymentArchive;
 		}
 
 		@Override
@@ -135,6 +152,8 @@ public class Phase_3_Reference {
 			}
 
 			if ((trackedDependency != null) && _referenceDependencies.isEmpty()) {
+				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _beanDeploymentArchive);
+
 				_publishPhase.open(_bootstrap);
 			}
 
@@ -150,12 +169,15 @@ public class Phase_3_Reference {
 			if (_referenceDependencies.isEmpty()) {
 				_publishPhase.close();
 
+				_publishPhase = null;
+
 				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
 			}
 			_referenceDependencies.add(referenceDependency);
 		}
 
-		private WeldBootstrap _bootstrap;
+		private final BeanDeploymentArchive _beanDeploymentArchive;
+		private final WeldBootstrap _bootstrap;
 
 	}
 

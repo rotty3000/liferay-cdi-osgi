@@ -79,6 +79,10 @@ public class CdiContainerState {
 	public Bundle getExtenderBundle() {
 		return _extenderBundle;
 	}
+	
+	public String getId() {
+		return _bundle.getSymbolicName() + ":" + _bundle.getBundleId();
+	}
 
 	public CdiEvent.State getLastState() {
 		return _lastState.get();

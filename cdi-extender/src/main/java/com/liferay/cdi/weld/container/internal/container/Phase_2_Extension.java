@@ -16,6 +16,7 @@
 
 package com.liferay.cdi.weld.container.internal.container;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.inject.spi.Extension;
 
-import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -42,16 +43,15 @@ import com.liferay.cdi.weld.container.internal.CdiContainerState;
 public class Phase_2_Extension {
 
 	public Phase_2_Extension(
-		Bundle bundle, CdiContainerState cdiContainerState, BeanDeploymentArchive beanDeploymentArchive) {
+		Bundle bundle, CdiContainerState cdiContainerState, Collection<String> beanClasses, BeansXml beansXml) {
 
 		_bundle = bundle;
 		_cdiContainerState = cdiContainerState;
-		_beanDeploymentArchive = beanDeploymentArchive;
-		_bundleContext = _bundle.getBundleContext();
-		_bundleWiring = _bundle.adapt(BundleWiring.class);
+		_bundleContext = bundle.getBundleContext();
+		_extensionDependencies = findExtensionDependencies(bundle.adapt(BundleWiring.class));
 		_extensions = new ConcurrentSkipListMap<>(Comparator.reverseOrder());
-
-		_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _beanDeploymentArchive, _extensions);
+		_beanClasses = beanClasses;
+		_beansXml = beansXml;
 	}
 
 	public void close() {
@@ -59,9 +59,13 @@ public class Phase_2_Extension {
 
 		if (_extensionTracker != null) {
 			_extensionTracker.close();
+
+			_extensionTracker = null;
 		}
 		else {
 			_phase3.close();
+			
+			_phase3 = null;
 		}
 
 		_cdiContainerState.fire(CdiEvent.State.DESTROYED);
@@ -71,8 +75,6 @@ public class Phase_2_Extension {
 
 	public void open() {
 		_cdiContainerState.fire(CdiEvent.State.CREATING);
-
-		findExtensionDependencies();
 
 		if (!_extensionDependencies.isEmpty()) {
 			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS);
@@ -84,12 +86,15 @@ public class Phase_2_Extension {
 			_extensionTracker.open();
 		}
 		else {
+			_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClasses, _beansXml);
+
 			_phase3.open();
 		}
 	}
 
-	private void findExtensionDependencies() {
-		List<BundleWire> requiredWires = _bundleWiring.getRequiredWires(CdiExtenderConstants.CDI_EXTENSION);
+	List<ExtensionDependency> findExtensionDependencies(BundleWiring bundleWiring) {
+		List<ExtensionDependency> extensionDependencies = new CopyOnWriteArrayList<>();
+		List<BundleWire> requiredWires = bundleWiring.getRequiredWires(CdiExtenderConstants.CDI_EXTENSION);
 
 		for (BundleWire wire : requiredWires) {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
@@ -100,19 +105,21 @@ public class Phase_2_Extension {
 				ExtensionDependency extensionDependency = new ExtensionDependency(
 					_bundleContext, wire.getProvider().getBundle().getBundleId(), extension);
 
-				_extensionDependencies.add(extensionDependency);
+				extensionDependencies.add(extensionDependency);
 			}
 		}
+
+		return extensionDependencies;
 	}
 
-	private final BeanDeploymentArchive _beanDeploymentArchive;
-	private final BundleContext _bundleContext;
+	private final Collection<String> _beanClasses;
+	private final BeansXml _beansXml;
 	private final Bundle _bundle;
-	private final BundleWiring _bundleWiring;
+	private final BundleContext _bundleContext;
 	private final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
-	private final List<ExtensionDependency> _extensionDependencies = new CopyOnWriteArrayList<>();
-	private final Phase_3_Reference _phase3;
+	private final List<ExtensionDependency> _extensionDependencies;
+	private Phase_3_Reference _phase3;
 
 	private ServiceTracker<Extension, ExtensionDependency> _extensionTracker;
 
@@ -136,6 +143,8 @@ public class Phase_2_Extension {
 			}
 
 			if ((trackedDependency != null) && _extensionDependencies.isEmpty()) {
+				_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClasses, _beansXml);
+
 				_phase3.open();
 			}
 
@@ -150,6 +159,8 @@ public class Phase_2_Extension {
 		public void removedService(ServiceReference<Extension> reference, ExtensionDependency extentionDependency) {
 			if (_extensionDependencies.isEmpty()) {
 				_phase3.close();
+				
+				_phase3 = null;
 
 				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS);
 			}
