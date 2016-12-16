@@ -192,7 +192,7 @@ public class Phase_4_Publish {
 		Dictionary<String, Object> properties = new Hashtable<>();
 
 		if (service != null) {
-			for (ServiceProperty serviceProperty :service.properties()) {
+			for (ServiceProperty serviceProperty : service.properties()) {
 				// TODO convert value to typed
 				properties.put(serviceProperty.key(), serviceProperty.value());
 			}

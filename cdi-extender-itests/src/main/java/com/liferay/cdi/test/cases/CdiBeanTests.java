@@ -128,6 +128,7 @@ public class CdiBeanTests extends AbstractTestCase {
 		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
 		Object bcb = beanManager.getReference(bean, Object.class, ctx);
 		assertNotNull(bcb);
+		@SuppressWarnings("unchecked")
 		BeanThingy<BundleContext> bti = (BeanThingy<BundleContext>)bcb;
 		assertNotNull(bti.getThingy());
 		assertTrue(bti.getThingy() instanceof BundleContext);
