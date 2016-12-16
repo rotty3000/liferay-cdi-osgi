@@ -1,0 +1,1 @@
+Provide-Capability: osgi.cdi.extension;osgi.cdi.extension=jndi;version:Version="0.0.1"

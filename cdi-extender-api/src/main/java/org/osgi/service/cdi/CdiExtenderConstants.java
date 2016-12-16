@@ -30,5 +30,4 @@ public class CdiExtenderConstants {
 
 	public static final String CDI_EXTENSION = "osgi.cdi.extension";
 
-	public static final String CDI_EXTENSION_ATTRIBUTE = "extensions";
 }

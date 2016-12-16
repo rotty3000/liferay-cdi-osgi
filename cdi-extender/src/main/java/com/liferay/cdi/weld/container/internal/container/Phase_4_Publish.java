@@ -47,12 +47,10 @@ import org.osgi.service.cdi.annotations.BundleScoped;
 import org.osgi.service.cdi.annotations.PrototypeScoped;
 import org.osgi.service.cdi.annotations.Service;
 import org.osgi.service.cdi.annotations.ServiceProperty;
-import org.osgi.service.jndi.JNDIConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.liferay.cdi.weld.container.internal.CdiContainerState;
-import com.liferay.cdi.weld.container.internal.jndi.JndiObjectFactory;
 
 public class Phase_4_Publish {
 
@@ -118,12 +116,6 @@ public class Phase_4_Publish {
 
 		_beanManagerRegistration = _bundle.getBundleContext().registerService(
 			BeanManager.class, beanManager, null);
-
-		Dictionary<String, Object> properties = new Hashtable<>();
-		properties.put(JNDIConstants.JNDI_URLSCHEME, "java");
-
-		_objectFactoryRegistration = _bundle.getBundleContext().registerService(
-			ObjectFactory.class, new JndiObjectFactory(beanManager), properties);
 
 		_cdiContainerState.fire(CdiEvent.State.CREATED, beanManager);
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.weld.container.internal.jndi;
+package com.liferay.cdi.extension.jndi;
 
 import java.util.Hashtable;
 
@@ -28,11 +28,9 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 
-import org.jboss.weld.exceptions.UnsupportedOperationException;
+public class JndiContext implements Context {
 
-public class JNDIContext implements Context {
-
-	public JNDIContext(BeanManager beanManager) {
+	public JndiContext(BeanManager beanManager) {
 		_beanManager = beanManager;
 	}
 
@@ -44,7 +42,7 @@ public class JNDIContext implements Context {
 	@Override
 	public Object lookup(String name) throws NamingException {
 		if (name.length() == 0) {
-			return new JNDIContext(_beanManager);
+			return new JndiContext(_beanManager);
 		}
 		if (name.equals("java:comp/BeanManager")) {
 			return _beanManager;
@@ -54,132 +52,132 @@ public class JNDIContext implements Context {
 
 	@Override
 	public void bind(Name name, Object obj) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void bind(String name, Object obj) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void rebind(Name name, Object obj) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void rebind(String name, Object obj) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void unbind(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void unbind(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void rename(Name oldName, Name newName) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void rename(String oldName, String newName) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void destroySubcontext(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void destroySubcontext(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Context createSubcontext(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Context createSubcontext(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Object lookupLink(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Object lookupLink(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NameParser getNameParser(Name name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public NameParser getNameParser(String name) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Name composeName(Name name, Name prefix) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public String composeName(String name, String prefix) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Object addToEnvironment(String propName, Object propVal) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Object removeFromEnvironment(String propName) throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public Hashtable<?, ?> getEnvironment() throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override
 	public void close() throws NamingException {
-		throw new UnsupportedOperationException();
+		throw new OperationNotSupportedException();
 	}
 
 	@Override

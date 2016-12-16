@@ -88,6 +88,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.cdi</groupId>
+			<artifactId>com.liferay.cdi.extension.jndi</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.liferay.cdi</groupId>
 			<artifactId>com.liferay.cdi.log4j-configuration</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>

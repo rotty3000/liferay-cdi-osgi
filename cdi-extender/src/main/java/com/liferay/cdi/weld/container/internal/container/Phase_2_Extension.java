@@ -94,7 +94,7 @@ public class Phase_2_Extension {
 		for (BundleWire wire : requiredWires) {
 			Map<String, Object> attributes = wire.getCapability().getAttributes();
 
-			String extension = (String)attributes.get(CdiExtenderConstants.CDI_EXTENSION_ATTRIBUTE);
+			String extension = (String)attributes.get(CdiExtenderConstants.CDI_EXTENSION);
 
 			if (extension != null) {
 				ExtensionDependency extensionDependency = new ExtensionDependency(

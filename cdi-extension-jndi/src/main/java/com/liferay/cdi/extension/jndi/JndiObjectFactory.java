@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.weld.container.internal.jndi;
+package com.liferay.cdi.extension.jndi;
 
 import java.util.Hashtable;
 
@@ -25,7 +25,7 @@ import javax.naming.spi.ObjectFactory;
 public class JndiObjectFactory implements ObjectFactory {
 
 	public JndiObjectFactory(BeanManager beanManager) {
-		_jndiContext = new JNDIContext(beanManager);
+		_jndiContext = new JndiContext(beanManager);
 	}
 
 	@Override
@@ -40,6 +40,6 @@ public class JndiObjectFactory implements ObjectFactory {
 		return null;
 	}
 
-	private final JNDIContext _jndiContext;
+	private final JndiContext _jndiContext;
 
 }
