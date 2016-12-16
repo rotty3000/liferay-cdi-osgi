@@ -52,7 +52,7 @@ public class CdiEvent {
 		this.extenderBundle = extenderBundle;
 		this.cause = cause;
 		this.replay = replay;
-		this.timestamp = 0L;
+		this.timestamp = System.currentTimeMillis();
 
 		StringBuilder sb = new StringBuilder();
 
