@@ -5,6 +5,7 @@
 -standalone: target/index.xml
 
 -runrequires: \
+	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.api.provider.fragment)',\
 	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.extender)',\
 	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.extender.itests)',\
 	osgi.identity;filter:='(osgi.identity=com.liferay.cdi.extension.jndi)',\
@@ -13,6 +14,7 @@
 	osgi.identity;filter:='(osgi.identity=slf4j.log4j12)'
 
 -runbundles: \
+	com.liferay.cdi.api.provider.fragment; version='[0.0.1,0.0.2)',\
 	com.liferay.cdi.extender; version='[0.0.1,0.0.2)',\
 	com.liferay.cdi.extender.itests; version='[0.0.1,0.0.2)',\
 	com.liferay.cdi.extension.jndi; version='[0.0.1,0.0.2)',\

@@ -1,4 +1,5 @@
-Bundle-Activator: com.liferay.cdi.weld.container.internal.Activator
+Bundle-Activator: com.liferay.cdi.container.internal.Activator
+Export-Package: com.liferay.cdi.provider;cdi-api-bundle=true;mandatory:=cdi-api-bundle
 Provide-Capability: \
 	osgi.extender; \
 		osgi.extender='osgi.cdi'; \

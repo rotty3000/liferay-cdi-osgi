@@ -83,6 +83,11 @@
 
 		<dependency>
 			<groupId>com.liferay.cdi</groupId>
+			<artifactId>com.liferay.cdi.api.provider.fragment</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.liferay.cdi</groupId>
 			<artifactId>com.liferay.cdi.extender</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>

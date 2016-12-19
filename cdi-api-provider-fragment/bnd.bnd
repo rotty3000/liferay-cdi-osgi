@@ -1,0 +1,3 @@
+Fragment-Host: javax.enterprise.cdi-api
+Import-Package: com.liferay.cdi.provider;cdi-api-bundle=true
+-resourceonly: true
