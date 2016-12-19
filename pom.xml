@@ -29,7 +29,7 @@
         <module>cdi-extender</module>
         <module>cdi-extension-jndi</module>
         <module>cdi-extender-itests</module>
-        <!--<module>cdi-extender-run</module>-->
+        <module>cdi-extender-executable</module>
     </modules>
 
     <build>
