@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.container.internal.scan;
+package com.liferay.cdi.container.internal.locate;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,12 +26,12 @@ import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cdi.CdiExtenderConstants;
 
-public class ScannerUtil {
+public class ClassLocater {
 
 	private static final String[] BEAN_DESCRIPTOR_PATHS = new String[] {"META-INF/beans.xml", "WEB-INF/beans.xml"};
 
 	@SuppressWarnings("unchecked")
-	public static ScanResults scan(BundleWiring bundleWiring) {
+	public static ClassLocaterResult locate(BundleWiring bundleWiring) {
 		List<URL> beanDescriptorURLs = new ArrayList<URL>();
 
 		for (String descriptorPath : BEAN_DESCRIPTOR_PATHS) {
@@ -70,7 +70,7 @@ public class ScannerUtil {
 			}
 		}
 
-		return new ScanResults(beanClasses, beanDescriptorURLs);
+		return new ClassLocaterResult(beanClasses, beanDescriptorURLs);
 	}
 
 }

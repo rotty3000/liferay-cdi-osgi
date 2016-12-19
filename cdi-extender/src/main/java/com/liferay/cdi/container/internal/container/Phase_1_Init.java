@@ -24,20 +24,20 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
 import com.liferay.cdi.container.internal.CdiContainerState;
-import com.liferay.cdi.container.internal.scan.ScanResults;
-import com.liferay.cdi.container.internal.scan.ScannerUtil;
+import com.liferay.cdi.container.internal.locate.ClassLocaterResult;
+import com.liferay.cdi.container.internal.locate.ClassLocater;
 
 public class Phase_1_Init {
 
 	public Phase_1_Init(Bundle bundle, CdiContainerState cdiContainerState) {
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 
-		ScanResults scanResults = ScannerUtil.scan(bundleWiring);
-		Collection<String> beanClasses = scanResults.getBeanClasses();
+		ClassLocaterResult locatorResult = ClassLocater.locate(bundleWiring);
+		Collection<String> beanClassNames = locatorResult.getBeanClassNames();
 		BeansXmlParser beansXmlParser = new BeansXmlParser();
-		BeansXml beansXml = beansXmlParser.parse(scanResults.getBeanDescriptorURLs());
+		BeansXml beansXml = beansXmlParser.parse(locatorResult.getBeanDescriptorURLs());
 
-		_phase2 = new Phase_2_Extension(bundle, cdiContainerState, beanClasses, beansXml);
+		_phase2 = new Phase_2_Extension(bundle, cdiContainerState, beanClassNames, beansXml);
 	}
 
 	public void close() {

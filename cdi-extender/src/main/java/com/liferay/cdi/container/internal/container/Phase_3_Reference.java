@@ -44,14 +44,14 @@ public class Phase_3_Reference {
 
 	public Phase_3_Reference(
 		Bundle bundle, CdiContainerState cdiContainerState, Map<ServiceReference<Extension>, 
-		Metadata<Extension>> extensions, Collection<String> beanClasses, BeansXml beansXml) {
+		Metadata<Extension>> extensions, Collection<String> beanClassNames, BeansXml beansXml) {
 
 		_bundle = bundle;
 		_cdiContainerState = cdiContainerState;
 		_extensions = extensions;
 		_bundleContext = _bundle.getBundleContext();
 		_bundleWiring = _bundle.adapt(BundleWiring.class);
-		_beanClasses = beanClasses;
+		_beanClassNames = beanClassNames;
 		_beansXml = beansXml;
 	}
 
@@ -70,7 +70,8 @@ public class Phase_3_Reference {
 
 	public void open() {
 		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
-			_bundleWiring, _cdiContainerState.getId(), _beanClasses, _beansXml, _cdiContainerState.getExtenderBundle());
+			_bundleWiring, _cdiContainerState.getId(), _beanClassNames, _beansXml, 
+			_cdiContainerState.getExtenderBundle());
 		
 		WeldBootstrap bootstrap = new WeldBootstrap();
 
@@ -118,7 +119,7 @@ public class Phase_3_Reference {
 		}
 	}
 
-	private final Collection<String> _beanClasses;
+	private final Collection<String> _beanClassNames;
 	private final BeansXml _beansXml;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;

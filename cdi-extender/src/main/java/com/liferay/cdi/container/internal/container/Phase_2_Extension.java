@@ -43,14 +43,14 @@ import com.liferay.cdi.container.internal.CdiContainerState;
 public class Phase_2_Extension {
 
 	public Phase_2_Extension(
-		Bundle bundle, CdiContainerState cdiContainerState, Collection<String> beanClasses, BeansXml beansXml) {
+		Bundle bundle, CdiContainerState cdiContainerState, Collection<String> beanClassNames, BeansXml beansXml) {
 
 		_bundle = bundle;
 		_cdiContainerState = cdiContainerState;
 		_bundleContext = bundle.getBundleContext();
 		_extensionDependencies = findExtensionDependencies(bundle.adapt(BundleWiring.class));
 		_extensions = new ConcurrentSkipListMap<>(Comparator.reverseOrder());
-		_beanClasses = beanClasses;
+		_beanClassNames = beanClassNames;
 		_beansXml = beansXml;
 	}
 
@@ -86,7 +86,7 @@ public class Phase_2_Extension {
 			_extensionTracker.open();
 		}
 		else {
-			_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClasses, _beansXml);
+			_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
 
 			_phase3.open();
 		}
@@ -112,7 +112,7 @@ public class Phase_2_Extension {
 		return extensionDependencies;
 	}
 
-	private final Collection<String> _beanClasses;
+	private final Collection<String> _beanClassNames;
 	private final BeansXml _beansXml;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
@@ -143,7 +143,7 @@ public class Phase_2_Extension {
 			}
 
 			if ((trackedDependency != null) && _extensionDependencies.isEmpty()) {
-				_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClasses, _beansXml);
+				_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
 
 				_phase3.open();
 			}

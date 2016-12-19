@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.container.internal.scan;
+package com.liferay.cdi.container.internal.locate;
 
 import java.net.URL;
 import java.util.Collection;
 
-public class ScanResults {
+public class ClassLocaterResult {
 
-	public ScanResults(Collection<String> beanClasses, Collection<URL> beanDescriptorURLs) {
+	public ClassLocaterResult(Collection<String> beanClasses, Collection<URL> beanDescriptorURLs) {
 		_beanClasses = beanClasses;
 		_beanDescriptorURLs = beanDescriptorURLs;
 	}
 
-	public Collection<String> getBeanClasses() {
+	public Collection<String> getBeanClassNames() {
 		return _beanClasses;
 	}
 

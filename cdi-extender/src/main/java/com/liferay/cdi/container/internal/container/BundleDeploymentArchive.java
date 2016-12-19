@@ -34,11 +34,11 @@ import com.liferay.cdi.container.internal.loader.BundleResourcesLoader;
 public class BundleDeploymentArchive implements BeanDeploymentArchive {
 
 	public BundleDeploymentArchive(
-		BundleWiring bundleWiring, String id, Collection<String> beanClasses, BeansXml beansXml, 
+		BundleWiring bundleWiring, String id, Collection<String> beanClassNames, BeansXml beansXml, 
 		Bundle extenderBundle) {
 
 		_id = id;
-		_beanClasses = beanClasses;
+		_beanClassNames = beanClassNames;
 		_beanDeploymentArchives = Collections.emptyList();
 		_beansXml = beansXml;
 		_ejbs = Collections.emptyList();
@@ -52,7 +52,7 @@ public class BundleDeploymentArchive implements BeanDeploymentArchive {
 
 	@Override
 	public Collection<String> getBeanClasses() {
-		return _beanClasses;
+		return _beanClassNames;
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class BundleDeploymentArchive implements BeanDeploymentArchive {
 		return _services;
 	}
 
-	private final Collection<String> _beanClasses;
+	private final Collection<String> _beanClassNames;
 	private final Collection<BeanDeploymentArchive> _beanDeploymentArchives;
 	private final BeansXml _beansXml;
 	private final Collection<EjbDescriptor<?>> _ejbs;
