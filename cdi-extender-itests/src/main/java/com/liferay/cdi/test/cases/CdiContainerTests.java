@@ -26,10 +26,10 @@ public class CdiContainerTests extends AbstractTestCase {
 		assertPojoExists(beanManager);
 	}
 
-	public void testGetBeanFromCdiUtil() throws Exception {
+	public void testGetBeanManagerFromCDI() throws Exception {
 		Thread currentThread = Thread.currentThread();
 		ClassLoader contextClassLoader = currentThread.getContextClassLoader();
-		
+
 		try {
 			BundleWiring bundleWiring = cdiBundle.adapt(BundleWiring.class);
 
