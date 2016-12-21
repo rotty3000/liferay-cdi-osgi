@@ -16,28 +16,42 @@
 
 package com.liferay.cdi.container.internal.bean;
 
+import static com.liferay.cdi.container.internal.util.Reflection.cast;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.Decorator;
 import javax.enterprise.inject.spi.InjectionPoint;
 
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.util.Decorators;
+
 import com.liferay.cdi.container.internal.container.ReferenceDependency;
+import com.liferay.cdi.container.internal.literal.AnyLiteral;
+import com.liferay.cdi.container.internal.literal.DefaultLiteral;
+import com.liferay.cdi.container.internal.util.Sets;
 
 @SuppressWarnings("rawtypes")
-public class ReferenceBean implements Bean {
+public class ReferenceBean implements Bean<Object> {
 
 	public ReferenceBean(BeanManager manager, ReferenceDependency referenceDependency) {
+		_manager = ((BeanManagerProxy)manager).delegate();
 		_referenceDependency = referenceDependency;
+		_types = Sets.immutableHashSet(_referenceDependency.getInjectionPoint().getType(), Object.class);
 	}
 
 	@Override
-	public Object create(CreationalContext creationalContext) {
-		return _referenceDependency.getServiceImpl();
+	public Object create(CreationalContext<Object> creationalContext) {
+		return create0(creationalContext);
 	}
 
 	@Override
@@ -62,12 +76,12 @@ public class ReferenceBean implements Bean {
 
 	@Override
 	public Set<Annotation> getQualifiers() {
-		return Collections.singleton(new DefaultQualifier());
+		return DEFAULT_QUALIFIERS;
 	}
 
 	@Override
 	public Class<? extends Annotation> getScope() {
-		return _referenceDependency.getScope();
+		return Dependent.class;
 	}
 
 	@Override
@@ -77,7 +91,7 @@ public class ReferenceBean implements Bean {
 
 	@Override
 	public Set<Type> getTypes() {
-		return _referenceDependency.getTypes();
+		return _types;
 	}
 
 	@Override
@@ -95,6 +109,24 @@ public class ReferenceBean implements Bean {
 		return "ReferenceBean(" + _referenceDependency + ")";
 	}
 
+	protected <T> T create0(CreationalContext<T> creationalContext) {
+		InjectionPoint ip = _referenceDependency.getInjectionPoint();
+		List<Decorator<?>> decorators = getDecorators(ip);
+		T instance = cast(_referenceDependency.getServiceImpl());
+		if (decorators.isEmpty()) {
+			return instance;
+		}
+		return Decorators.getOuterDelegate(cast(this), instance, creationalContext, cast(getBeanClass()), ip, _manager, decorators);
+	}
+
+	protected List<Decorator<?>> getDecorators(InjectionPoint ip) {
+		return _manager.resolveDecorators(Collections.singleton(ip.getType()), getQualifiers());
+	}
+
+	private static final Set<Annotation> DEFAULT_QUALIFIERS = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral	.INSTANCE);
+
+	private final BeanManagerImpl _manager;
 	private final ReferenceDependency _referenceDependency;
+	private final Set<Type> _types;
 
 }

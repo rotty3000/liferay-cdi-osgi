@@ -28,6 +28,10 @@ import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.osgi.framework.BundleContext;
 
+import com.liferay.cdi.container.internal.literal.AnyLiteral;
+import com.liferay.cdi.container.internal.literal.DefaultLiteral;
+import com.liferay.cdi.container.internal.util.Sets;
+
 public class BundleContextBean implements Bean<BundleContext> {
 
 	public BundleContextBean(BundleContext bundleContext) {
@@ -60,7 +64,7 @@ public class BundleContextBean implements Bean<BundleContext> {
 
 	@Override
 	public Set<Annotation> getQualifiers() {
-		return Collections.singleton(new DefaultQualifier());
+		return DEFAULT_QUALIFIERS;
 	}
 
 	@Override
@@ -75,7 +79,7 @@ public class BundleContextBean implements Bean<BundleContext> {
 
 	@Override
 	public Set<Type> getTypes() {
-		return Collections.singleton(BundleContext.class);
+		return TYPES;
 	}
 
 	@Override
@@ -87,6 +91,9 @@ public class BundleContextBean implements Bean<BundleContext> {
 	public boolean isNullable() {
 		return false;
 	}
+
+	private static final Set<Annotation> DEFAULT_QUALIFIERS = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE);
+	private static final Set<Type> TYPES = Sets.immutableHashSet(BundleContext.class, Object.class);
 
 	private final BundleContext _bundleContext;
 

@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.container.internal.bean;
+package com.liferay.cdi.container.internal.literal;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.util.AnnotationLiteral;
 
-@SuppressWarnings("serial")
-public class DefaultQualifier extends AnnotationLiteral<Default> implements Default {
+public class DefaultLiteral extends AnnotationLiteral<Default> implements Default {
+
+	private static final long serialVersionUID = 1L;
+	public static final Default INSTANCE = new DefaultLiteral();
+
+	private DefaultLiteral() {
+	}
+
 }

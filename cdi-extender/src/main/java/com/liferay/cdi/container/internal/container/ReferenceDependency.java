@@ -16,6 +16,8 @@
 
 package com.liferay.cdi.container.internal.container;
 
+import static com.liferay.cdi.container.internal.util.Reflection.cast;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -94,6 +96,10 @@ public class ReferenceDependency {
 		return _serviceClass;
 	}
 
+	public InjectionPoint getInjectionPoint() {
+		return _injectionPoint;
+	}
+
 	public Class<? extends Annotation> getScope() {
 		return _scope;
 	}
@@ -104,8 +110,6 @@ public class ReferenceDependency {
 			return _serviceReference;
 		}
 		else if (_bindType == BindType.SERVICE_PROPERTIES) {
-			// TODO should this be a wrapper around the ServiceReference rather than a copy?
-
 			Map<String, Object> properties = new HashMap<>();
 
 			for (String key : _serviceReference.getPropertyKeys()) {
@@ -115,7 +119,9 @@ public class ReferenceDependency {
 			return properties;
 		}
 
-		_serviceObjects = _bundleContext.getServiceObjects(_serviceReference);
+		if (_serviceObjects == null) {
+			_serviceObjects = _bundleContext.getServiceObjects(_serviceReference);
+		}
 
 		return _serviceObjects.getService();
 	}
@@ -204,18 +210,18 @@ public class ReferenceDependency {
 
 	private BindType getBindType(Type type) {
 		if (type instanceof ParameterizedType) {
-			ParameterizedType parameterizedType = (ParameterizedType)type;
+			ParameterizedType parameterizedType = cast(type);
 
 			Type rawType = parameterizedType.getRawType();
 
-			if (Map.class.isAssignableFrom((Class<?>)rawType)) {
+			if (Map.class.isAssignableFrom(cast(rawType))) {
 				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
 
 				Type first = actualTypeArguments[0];
 				Type second = actualTypeArguments[1];
 
 				if (!(first instanceof ParameterizedType) &&
-					String.class.isAssignableFrom((Class<?>)first)) {
+					String.class.isAssignableFrom(cast(first))) {
 
 					if ((!(second instanceof ParameterizedType) && (second == Object.class)) ||
 						(second instanceof WildcardType)) {
@@ -226,13 +232,13 @@ public class ReferenceDependency {
 
 				return BindType.SERVICE;
 			}
-			else if (ServiceReference.class.isAssignableFrom((Class<?>)rawType)) {
+			else if (ServiceReference.class.isAssignableFrom(cast(rawType))) {
 				return BindType.SERVICE_REFERENCE;
 			}
 
 			return BindType.SERVICE;
 		}
-		else if (ServiceReference.class.isAssignableFrom((Class<?>)type)) {
+		else if (ServiceReference.class.isAssignableFrom(cast(type))) {
 			return BindType.SERVICE_REFERENCE;
 		}
 
@@ -259,15 +265,15 @@ public class ReferenceDependency {
 		}
 
 		if (!(type instanceof ParameterizedType)) {
-			return (Class<?>)type;
+			return cast(type);
 		}
 
-		ParameterizedType parameterizedType = (ParameterizedType)type;
+		ParameterizedType parameterizedType = cast(type);
 
 		Type rawType = parameterizedType.getRawType();
 
-		if (!ServiceReference.class.isAssignableFrom((Class<?>)rawType)) {
-			return (Class<?>)rawType;
+		if (!ServiceReference.class.isAssignableFrom(cast(rawType))) {
+			return cast(rawType);
 		}
 
 		Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
@@ -275,10 +281,12 @@ public class ReferenceDependency {
 		Type first = actualTypeArguments[0];
 
 		if (first instanceof ParameterizedType) {
-			return (Class<?>)((ParameterizedType)first).getRawType();
+			ParameterizedType parameterizedType1 = cast(first);
+
+			return cast(parameterizedType1.getRawType());
 		}
 
-		return (Class<?>)first;
+		return cast(first);
 	}
 
 	private static final Logger _log = LoggerFactory.getLogger(ReferenceDependency.class);
@@ -290,6 +298,7 @@ public class ReferenceDependency {
 	private final InjectionPoint _injectionPoint;
 	private final Reference _reference;
 	private final Class<? extends Annotation> _scope;
+	@SuppressWarnings("rawtypes")
 	private volatile ServiceObjects _serviceObjects;
 	@SuppressWarnings("rawtypes")
 	private volatile ServiceReference _serviceReference;

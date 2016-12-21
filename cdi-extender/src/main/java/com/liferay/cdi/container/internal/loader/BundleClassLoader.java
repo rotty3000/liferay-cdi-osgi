@@ -66,7 +66,7 @@ public class BundleClassLoader extends URLClassLoader {
 			}
 		}
 
-		return Collections.enumeration(Collections.<URL>emptyList());
+		return Collections.emptyEnumeration();
 	}
 
 	public Bundle[] getBundles() {
