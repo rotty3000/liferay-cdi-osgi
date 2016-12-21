@@ -31,7 +31,7 @@ public enum ReferenceScope {
 	 * component with this reference can receive a unique instance of the
 	 * service.
 	 */
-	PROTOTYPE_REQUIRED("prototype_required"),
+	PROTOTYPE("prototype"),
 
 	/**
 	 * Bound services must have singleton service scope. Each instance of the

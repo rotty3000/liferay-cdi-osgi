@@ -61,7 +61,7 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 			return phase1;
 		}
 		catch (Throwable t) {
-			cdiHelper.fire(new CdiEvent(CdiEvent.State.FAILURE, bundle, _extenderBundle));
+			cdiHelper.fire(CdiEvent.State.FAILURE, t);
 
 			cdiHelper.close();
 		}

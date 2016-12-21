@@ -63,7 +63,7 @@ public class CdiContainerState {
 	public void close() {
 		try {
 			_lock.lock();
-			
+
 			_cdiContainerRegistration.unregister();
 		}
 		catch (Exception e) {
@@ -79,7 +79,7 @@ public class CdiContainerState {
 	public Bundle getExtenderBundle() {
 		return _extenderBundle;
 	}
-	
+
 	public String getId() {
 		return _bundle.getSymbolicName() + ":" + _bundle.getBundleId();
 	}
@@ -95,24 +95,24 @@ public class CdiContainerState {
 	public void fire(CdiEvent event, BeanManager beanManager) {
 		try {
 			_lock.lock();
-			
-			if ((_lastState.get() == CdiEvent.State.DESTROYING) && 
+
+			if ((_lastState.get() == CdiEvent.State.DESTROYING) &&
 				((event.getState() == CdiEvent.State.WAITING_FOR_EXTENSIONS) ||
-				 (event.getState() == CdiEvent.State.WAITING_FOR_SERVICES))) {
+				(event.getState() == CdiEvent.State.WAITING_FOR_SERVICES))) {
 
 				return;
 			}
-			
+
 			if (_log.isDebugEnabled()) {
-				_log.debug("CDIe - Event {}", event);
+				_log.debug("CDIe - Event {}", event, event.getCause());
 			}
-	
+
 			if (beanManager != null) {
 				_cdiContainerService.setBeanManager(beanManager);
 			}
-	
+
 			updateState(event);
-	
+
 			for (CdiListener listener : _listeners.values()) {
 				try {
 					listener.cdiEvent(event);
@@ -128,35 +128,43 @@ public class CdiContainerState {
 			_lock.unlock();
 		}
 	}
-	
+
 	public void fire(CdiEvent.State state) {
 		fire(new CdiEvent(state, _bundle, _extenderBundle), null);
+	}
+
+	public void fire(CdiEvent.State state, Throwable cause) {
+		fire(new CdiEvent(state, _bundle, _extenderBundle, cause), null);
 	}
 
 	public void fire(CdiEvent.State state, BeanManager beanManager) {
 		fire(new CdiEvent(state, _bundle, _extenderBundle), beanManager);
 	}
 
+	public void fire(CdiEvent.State state, Throwable cause, BeanManager beanManager) {
+		fire(new CdiEvent(state, _bundle, _extenderBundle, cause), beanManager);
+	}
+
 	private void updateState(CdiEvent event) {
 		try {
 			_lock.lock();
-	
+
 			ServiceReference<CdiContainer> reference = _cdiContainerRegistration.getReference();
-	
+
 			if (event.getState() == reference.getProperty(CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE)) {
 				return;
 			}
-			
+
 			_lastState.set(event.getState());
-	
+
 			Hashtable<String, Object> properties = new Hashtable<>();
-	
+
 			for (String key : reference.getPropertyKeys()) {
 				properties.put(key, reference.getProperty(key));
 			}
-	
+
 			properties.put(CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE, event.getState());
-	
+
 			_cdiContainerRegistration.setProperties(properties);
 		}
 		finally {

@@ -35,7 +35,7 @@ public class FieldInjectedReferenceImpl implements FieldInjectedReference {
 
 	@Inject
 	@Reference(
-		scope = ReferenceScope.PROTOTYPE_REQUIRED,
+		scope = ReferenceScope.PROTOTYPE,
 		service = DSServicePrototypeScope.class,
 		target = "(key=value)"
 	)

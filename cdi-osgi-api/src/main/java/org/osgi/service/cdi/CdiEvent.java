@@ -43,7 +43,7 @@ public class CdiEvent {
 	}
 
 	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
-		this(type, bundle, extenderBundle, null, false);
+		this(type, bundle, extenderBundle, cause, false);
 	}
 
 	private CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause, boolean replay) {
