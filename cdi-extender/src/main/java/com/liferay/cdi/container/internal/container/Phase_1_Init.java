@@ -37,17 +37,17 @@ public class Phase_1_Init {
 		BeansXmlParser beansXmlParser = new BeansXmlParser();
 		BeansXml beansXml = beansXmlParser.parse(locatorResult.getBeanDescriptorURLs());
 
-		_phase2 = new Phase_2_Extension(bundle, cdiContainerState, beanClassNames, beansXml);
+		_extensionPhase = new Phase_2_Extension(bundle, cdiContainerState, beanClassNames, beansXml);
 	}
 
 	public void close() {
-		_phase2.close();
+		_extensionPhase.close();
 	}
 
 	public void open() {
-		_phase2.open();
+		_extensionPhase.open();
 	}
 
-	private final Phase_2_Extension _phase2;
+	private final Phase_2_Extension _extensionPhase;
 
 }

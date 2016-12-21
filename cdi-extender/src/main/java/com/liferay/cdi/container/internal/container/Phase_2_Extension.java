@@ -63,9 +63,9 @@ public class Phase_2_Extension {
 			_extensionTracker = null;
 		}
 		else {
-			_phase3.close();
+			_referencePhase.close();
 			
-			_phase3 = null;
+			_referencePhase = null;
 		}
 
 		_cdiContainerState.fire(CdiEvent.State.DESTROYED);
@@ -86,9 +86,9 @@ public class Phase_2_Extension {
 			_extensionTracker.open();
 		}
 		else {
-			_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
+			_referencePhase = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
 
-			_phase3.open();
+			_referencePhase.open();
 		}
 	}
 
@@ -119,7 +119,7 @@ public class Phase_2_Extension {
 	private final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
 	private final List<ExtensionDependency> _extensionDependencies;
-	private Phase_3_Reference _phase3;
+	private Phase_3_Reference _referencePhase;
 
 	private ServiceTracker<Extension, ExtensionDependency> _extensionTracker;
 
@@ -143,9 +143,9 @@ public class Phase_2_Extension {
 			}
 
 			if ((trackedDependency != null) && _extensionDependencies.isEmpty()) {
-				_phase3 = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
+				_referencePhase = new Phase_3_Reference(_bundle, _cdiContainerState, _extensions, _beanClassNames, _beansXml);
 
-				_phase3.open();
+				_referencePhase.open();
 			}
 
 			return trackedDependency;
@@ -158,9 +158,9 @@ public class Phase_2_Extension {
 		@Override
 		public void removedService(ServiceReference<Extension> reference, ExtensionDependency extentionDependency) {
 			if (_extensionDependencies.isEmpty()) {
-				_phase3.close();
+				_referencePhase.close();
 				
-				_phase3 = null;
+				_referencePhase = null;
 
 				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS);
 			}

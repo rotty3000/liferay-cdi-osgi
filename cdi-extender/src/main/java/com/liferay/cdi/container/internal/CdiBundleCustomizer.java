@@ -53,15 +53,21 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 
 		CdiContainerState cdiHelper = new CdiContainerState(bundle, _extenderBundle, _listeners);
 
+		Phase_1_Init initPhase = null;
+
 		try {
-			Phase_1_Init phase1 = new Phase_1_Init(bundle, cdiHelper);
+			initPhase = new Phase_1_Init(bundle, cdiHelper);
 
-			phase1.open();
+			initPhase.open();
 
-			return phase1;
+			return initPhase;
 		}
 		catch (Throwable t) {
 			cdiHelper.fire(CdiEvent.State.FAILURE, t);
+
+			if (initPhase != null) {
+				initPhase.close();
+			}
 
 			cdiHelper.close();
 		}
