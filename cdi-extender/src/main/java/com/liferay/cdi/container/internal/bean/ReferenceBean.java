@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import com.liferay.cdi.container.internal.container.ReferenceDependency;
@@ -30,7 +31,7 @@ import com.liferay.cdi.container.internal.container.ReferenceDependency;
 @SuppressWarnings("rawtypes")
 public class ReferenceBean implements Bean {
 
-	public ReferenceBean(ReferenceDependency referenceDependency) {
+	public ReferenceBean(BeanManager manager, ReferenceDependency referenceDependency) {
 		_referenceDependency = referenceDependency;
 	}
 
@@ -40,8 +41,8 @@ public class ReferenceBean implements Bean {
 	}
 
 	@Override
-	public void destroy(Object service, CreationalContext creationalContext) {
-		_referenceDependency.ungetServiceImpl(service);
+	public void destroy(Object instance, CreationalContext creationalContext) {
+		_referenceDependency.ungetServiceImpl(instance);
 	}
 
 	@Override

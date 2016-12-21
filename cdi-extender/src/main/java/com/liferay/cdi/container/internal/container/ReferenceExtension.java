@@ -22,6 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -43,12 +44,10 @@ public class ReferenceExtension implements Extension {
 		_bundleContext = bundleContext;
 	}
 
-	void afterBeanDiscovery(@Observes AfterBeanDiscovery abd) {
+	void afterBeanDiscovery(@Observes AfterBeanDiscovery abd, BeanManager manager) {
 		for (ReferenceDependency referenceDependency : _referenceDependencies) {
 			referenceDependency.addBean(abd);
 		}
-
-		// Add the BundleContext as a bean
 
 		abd.addBean(new BundleContextBean(_bundleContext));
 
@@ -63,7 +62,7 @@ public class ReferenceExtension implements Extension {
 		}
 	}
 
-	void processInjectionTarget(@Observes ProcessInjectionPoint pip) {
+	void processInjectionTarget(@Observes ProcessInjectionPoint pip, BeanManager manager) {
 		InjectionPoint injectionPoint = pip.getInjectionPoint();
 		Annotated annotated = injectionPoint.getAnnotated();
 		Reference reference = annotated.getAnnotation(Reference.class);
@@ -74,7 +73,7 @@ public class ReferenceExtension implements Extension {
 
 		try {
 			ReferenceDependency referenceDependency = new ReferenceDependency(
-				reference, injectionPoint, _bundleContext);
+				reference, manager, injectionPoint, _bundleContext);
 
 			_referenceDependencies.add(referenceDependency);
 
@@ -84,7 +83,7 @@ public class ReferenceExtension implements Extension {
 		}
 		catch (Exception e) {
 			if (_log.isErrorEnabled()) {
-				_log.error("CDIe - Error on reference", e);
+				_log.error("CDIe - Error on reference {}", reference, e);
 			}
 		}
 	}

@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Singleton;
 
@@ -45,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 import com.liferay.cdi.container.internal.bean.ReferenceBean;
 
-@SuppressWarnings("rawtypes")
 public class ReferenceDependency {
 
 	static enum BindType {
@@ -53,16 +53,17 @@ public class ReferenceDependency {
 	}
 
 	public ReferenceDependency(
-			Reference reference, InjectionPoint injectionPoint, BundleContext bundleContext)
+			Reference reference, BeanManager manager, InjectionPoint injectionPoint, BundleContext bundleContext)
 		throws InvalidSyntaxException {
 
 		_reference = reference;
+		_manager = manager;
 		_injectionPoint = injectionPoint;
 		_bundleContext = bundleContext;
 
 		Class<? extends Annotation> scope = ApplicationScoped.class;
 
-		if (reference.scope() == ReferenceScope.PROTOTYPE_REQUIRED) {
+		if (reference.scope() == ReferenceScope.PROTOTYPE) {
 			scope = Dependent.class;
 		}
 		else if (reference.scope() == ReferenceScope.SINGLETON) {
@@ -70,97 +71,16 @@ public class ReferenceDependency {
 		}
 
 		_scope = scope;
-
-		String targetFilter = _reference.target();
-
-		int targetFilterLength = targetFilter.length();
-
-		if (targetFilterLength > 0) {
-			FrameworkUtil.createFilter(targetFilter);
-		}
-
 		_bindType = getBindType(_injectionPoint.getType());
 
-		Class<?> serviceType = _reference.service();
+		_serviceClass = getServiceType();
 
-		if (serviceType == Object.class) {
-			Type type = _injectionPoint.getType();
-
-			if (_bindType == BindType.SERVICE_PROPERTIES) {
-				throw new IllegalArgumentException(
-					"A @Reference cannot bind service properties to a Map<String, Object> without " +
-						"specifying the @Reference.service property: " + _injectionPoint);
-			}
-			else if ((_bindType == BindType.SERVICE_REFERENCE) && !(type instanceof ParameterizedType)) {
-				throw new IllegalArgumentException(
-					"A @Reference cannot bind a ServiceReference without specifying either the " +
-						"@Reference.service property or a generic type argument (e.g. ServiceReference<Foo>: " +
-							_injectionPoint);
-			}
-
-			if (type instanceof ParameterizedType) {
-				ParameterizedType parameterizedType = (ParameterizedType)type;
-
-				Type rawType = parameterizedType.getRawType();
-
-				if (ServiceReference.class.isAssignableFrom((Class<?>)rawType)) {
-					Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-
-					Type first = actualTypeArguments[0];
-
-					if (first instanceof ParameterizedType) {
-						serviceType = (Class<?>)((ParameterizedType)first).getRawType();
-					}
-					else {
-						serviceType = (Class<?>)first;
-					}
-				}
-				else {
-					serviceType = (Class<?>)rawType;
-				}
-			}
-			else {
-				serviceType = (Class<?>)type;
-			}
-		}
-
-		_serviceClass = serviceType;
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("(&(");
-		sb.append(Constants.OBJECTCLASS);
-		sb.append("=");
-		sb.append(serviceType.getName());
-		sb.append(")");
-
-		if (reference.scope() == ReferenceScope.PROTOTYPE_REQUIRED) {
-			sb.append("(");
-			sb.append(Constants.SERVICE_SCOPE);
-			sb.append("=");
-			sb.append(Constants.SCOPE_PROTOTYPE);
-			sb.append(")");
-		}
-		else if (reference.scope() == ReferenceScope.SINGLETON) {
-			sb.append("(");
-			sb.append(Constants.SERVICE_SCOPE);
-			sb.append("=");
-			sb.append(Constants.SCOPE_SINGLETON);
-			sb.append(")");
-		}
-
-		if ((targetFilterLength > 0)) {
-			sb.append(targetFilter);
-		}
-
-		sb.append(")");
-
-		_string = sb.toString();
+		_string = buildFilter(_serviceClass);
 		_filter = FrameworkUtil.createFilter(_string);
 	}
 
 	public void addBean(AfterBeanDiscovery abd) {
-		abd.addBean(new ReferenceBean(this));
+		abd.addBean(new ReferenceBean(_manager, this));
 	}
 
 	public Class<?> getBeanClass() {
@@ -168,7 +88,7 @@ public class ReferenceDependency {
 			return ServiceReference.class;
 		}
 		else if (_bindType == BindType.SERVICE_PROPERTIES) {
-			return ServiceProperties.class;
+			return Map.class;
 		}
 
 		return _serviceClass;
@@ -241,6 +161,47 @@ public class ReferenceDependency {
 		}
 	}
 
+	private String buildFilter(Class<?> serviceType) throws InvalidSyntaxException {
+		String targetFilter = _reference.target();
+
+		int targetFilterLength = targetFilter.length();
+
+		if (targetFilterLength > 0) {
+			FrameworkUtil.createFilter(targetFilter);
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("(&(");
+		sb.append(Constants.OBJECTCLASS);
+		sb.append("=");
+		sb.append(serviceType.getName());
+		sb.append(")");
+
+		if (_reference.scope() == ReferenceScope.PROTOTYPE) {
+			sb.append("(");
+			sb.append(Constants.SERVICE_SCOPE);
+			sb.append("=");
+			sb.append(Constants.SCOPE_PROTOTYPE);
+			sb.append(")");
+		}
+		else if (_reference.scope() == ReferenceScope.SINGLETON) {
+			sb.append("(");
+			sb.append(Constants.SERVICE_SCOPE);
+			sb.append("=");
+			sb.append(Constants.SCOPE_SINGLETON);
+			sb.append(")");
+		}
+
+		if ((targetFilterLength > 0)) {
+			sb.append(targetFilter);
+		}
+
+		sb.append(")");
+
+		return sb.toString();
+	}
+
 	private BindType getBindType(Type type) {
 		if (type instanceof ParameterizedType) {
 			ParameterizedType parameterizedType = (ParameterizedType)type;
@@ -278,8 +239,51 @@ public class ReferenceDependency {
 		return BindType.SERVICE;
 	}
 
+	private Class<?> getServiceType() {
+		if (_reference.service() != Object.class) {
+			return _reference.service();
+		}
+
+		Type type = _injectionPoint.getType();
+
+		if (_bindType == BindType.SERVICE_PROPERTIES) {
+			throw new IllegalArgumentException(
+				"A @Reference cannot bind service properties to a Map<String, Object> without " +
+					"specifying the @Reference.service property: " + _injectionPoint);
+		}
+		else if ((_bindType == BindType.SERVICE_REFERENCE) && !(type instanceof ParameterizedType)) {
+			throw new IllegalArgumentException(
+				"A @Reference cannot bind a ServiceReference without specifying either the " +
+					"@Reference.service property or a generic type argument (e.g. ServiceReference<Foo>: " +
+						_injectionPoint);
+		}
+
+		if (!(type instanceof ParameterizedType)) {
+			return (Class<?>)type;
+		}
+
+		ParameterizedType parameterizedType = (ParameterizedType)type;
+
+		Type rawType = parameterizedType.getRawType();
+
+		if (!ServiceReference.class.isAssignableFrom((Class<?>)rawType)) {
+			return (Class<?>)rawType;
+		}
+
+		Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+		Type first = actualTypeArguments[0];
+
+		if (first instanceof ParameterizedType) {
+			return (Class<?>)((ParameterizedType)first).getRawType();
+		}
+
+		return (Class<?>)first;
+	}
+
 	private static final Logger _log = LoggerFactory.getLogger(ReferenceDependency.class);
 
+	private final BeanManager _manager;
 	private final BindType _bindType;
 	private final BundleContext _bundleContext;
 	private final Filter _filter;
@@ -287,10 +291,9 @@ public class ReferenceDependency {
 	private final Reference _reference;
 	private final Class<? extends Annotation> _scope;
 	private volatile ServiceObjects _serviceObjects;
+	@SuppressWarnings("rawtypes")
 	private volatile ServiceReference _serviceReference;
 	private final Class<?> _serviceClass;
 	private final String _string;
-
-	private interface ServiceProperties extends Map<String, Object> {}
 
 }
