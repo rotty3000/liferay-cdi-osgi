@@ -16,7 +16,7 @@ public class FieldInjectedService implements BeanThingy<Pojo> {
 	}
 
 	@Override
-	public com.liferay.cdi.test.interfaces.Pojo getThingy() {
+	public Pojo getThingy() {
 		return _pojo;
 	}
 

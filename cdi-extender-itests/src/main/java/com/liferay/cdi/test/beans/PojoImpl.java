@@ -9,10 +9,6 @@ import com.liferay.cdi.test.interfaces.Pojo;
 @ApplicationScoped
 public class PojoImpl implements Pojo {
 
-	public PojoImpl() {
-		System.out.println("Created!!!");
-	}
-
 	@Override
 	public String foo(String fooInput) {
 		_counter.incrementAndGet();

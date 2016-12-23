@@ -96,12 +96,7 @@ public class Phase_3_Reference {
 
 		bootstrap.startContainer(new SimpleEnvironment(), deployment);
 		bootstrap.startInitialization();
-		try {
-			bootstrap.deployBeans();
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
+		bootstrap.deployBeans();
 
 		if (!_referenceDependencies.isEmpty()) {
 			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
