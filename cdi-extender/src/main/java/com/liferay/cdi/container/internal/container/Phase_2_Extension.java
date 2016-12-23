@@ -38,8 +38,6 @@ import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-import com.liferay.cdi.container.internal.CdiContainerState;
-
 public class Phase_2_Extension {
 
 	public Phase_2_Extension(

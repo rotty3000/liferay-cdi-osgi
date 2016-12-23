@@ -24,14 +24,8 @@ public class CdiJndiExtensionTests extends AbstractTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
-		cdiBundle.start();
+		super.setUp();
 		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		cdiBundle.uninstall();
 	}
 
 	public void testGetBeanManagerThroughJNDI() throws Exception {
@@ -48,12 +42,12 @@ public class CdiJndiExtensionTests extends AbstractTestCase {
 	public void testDisableExtensionAndCDIContainerWaits() throws Exception {
 		BundleTracker<Bundle> bt = new BundleTracker<>(
 			bundle.getBundleContext(), Bundle.RESOLVED | Bundle.ACTIVE, new BundleTrackerCustomizer<Bundle>() {
-	
+
 				@Override
 				public Bundle addingBundle(Bundle bundle, BundleEvent arg1) {
 					List<BundleCapability> capabilities = bundle.adapt(
 						BundleWiring.class).getCapabilities(CdiExtenderConstants.CDI_EXTENSION);
-					
+
 					if (capabilities.isEmpty()) {
 						return null;
 					}
@@ -63,52 +57,52 @@ public class CdiJndiExtensionTests extends AbstractTestCase {
 							return bundle;
 						}
 					}
-					
+
 					return null;
 				}
-	
+
 				@Override
 				public void modifiedBundle(Bundle bundle, BundleEvent arg1, Bundle arg2) {
 				}
-	
+
 				@Override
 				public void removedBundle(Bundle bundle, BundleEvent arg1, Bundle arg2) {
 				}
 			}
 		);
-		
+
 		bt.open();
-		
+
 		assertFalse(bt.isEmpty());
-		
+
 		Bundle extensionBundle = bt.getBundles()[0];
-		
+
 		Collection<ServiceReference<CdiContainer>> serviceReferences = bundleContext.getServiceReferences(
-			CdiContainer.class, "(&(objectClass=" + CdiContainer.class.getName() + ")(service.bundleid=" + 
+			CdiContainer.class, "(&(objectClass=" + CdiContainer.class.getName() + ")(service.bundleid=" +
 				cdiBundle.getBundleId() + "))");
-		
+
 		assertNotNull(serviceReferences);
 		assertFalse(serviceReferences.isEmpty());
 
 		ServiceReference<CdiContainer> serviceReference = serviceReferences.iterator().next();
-		
+
 		CdiEvent.State state = (CdiEvent.State)serviceReference.getProperty(
 			CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE);
-		
+
 		assertEquals(CdiEvent.State.CREATED, state);
-		
+
 		extensionBundle.stop();
 
 		state = (CdiEvent.State)serviceReference.getProperty(
 			CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE);
-		
+
 		assertEquals(CdiEvent.State.WAITING_FOR_EXTENSIONS, state);
 
 		extensionBundle.start();
 
 		state = (CdiEvent.State)serviceReference.getProperty(
 			CdiExtenderConstants.CDI_EXTENDER_CONTAINER_STATE);
-		
+
 		assertEquals(CdiEvent.State.CREATED, state);
 	}
 

@@ -100,6 +100,10 @@ public class ReferenceDependency {
 		return _injectionPoint;
 	}
 
+	public Reference getReference() {
+		return _reference;
+	}
+
 	public Class<? extends Annotation> getScope() {
 		return _scope;
 	}

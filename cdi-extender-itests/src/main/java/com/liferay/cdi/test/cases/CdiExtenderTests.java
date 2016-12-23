@@ -6,17 +6,6 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class CdiExtenderTests extends AbstractTestCase {
 
-	@Override
-	protected void setUp() throws Exception {
-		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
-		cdiBundle.start();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		cdiBundle.uninstall();
-	}
-
 	public void testStopExtender() throws Exception {
 		Bundle cdiExtenderBundle = getCdiExtenderBundle();
 

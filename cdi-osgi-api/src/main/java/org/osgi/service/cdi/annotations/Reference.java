@@ -22,10 +22,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
+
 /**
  * Annotation used to annotate a CDI injection point and inform the CDI extender that the injection should be done by a
  * service obtained from the OSGi registry.
  */
+@Qualifier
 @Target(value = { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.CONSTRUCTOR })
 @Retention(value = RetentionPolicy.RUNTIME)
 @Documented

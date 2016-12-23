@@ -33,7 +33,16 @@ public class AbstractTestCase extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		cdiContainer = waitForCdiContainer();
+		dsBundle = bundleContext.installBundle("ds-one.jar" , getBundle("ds-one.jar"));
+		dsBundle.start();
+		cdiBundle = bundleContext.installBundle("basic-beans.jar" , getBundle("basic-beans.jar"));
+		cdiBundle.start();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		cdiBundle.uninstall();
+		dsBundle.uninstall();
 	}
 
 	void assertPojoExists(BeanManager beanManager) {
@@ -102,9 +111,10 @@ public class AbstractTestCase extends TestCase {
 
 	static final Bundle bundle = FrameworkUtil.getBundle(CdiBeanTests.class);
 	static final BundleContext bundleContext = bundle.getBundleContext();
-	static final long timeout = 5000;
+	static final long timeout = 10000;
 
 	Bundle cdiBundle;
+	Bundle dsBundle;
 	CdiContainer cdiContainer;
 
 }

@@ -47,6 +47,7 @@ public class ReferenceBean implements Bean<Object> {
 		_manager = ((BeanManagerProxy)manager).delegate();
 		_referenceDependency = referenceDependency;
 		_types = Sets.immutableHashSet(_referenceDependency.getInjectionPoint().getType(), Object.class);
+		_qualifiers = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE, _referenceDependency.getReference());
 	}
 
 	@Override
@@ -76,7 +77,7 @@ public class ReferenceBean implements Bean<Object> {
 
 	@Override
 	public Set<Annotation> getQualifiers() {
-		return DEFAULT_QUALIFIERS;
+		return _qualifiers;
 	}
 
 	@Override
@@ -123,9 +124,8 @@ public class ReferenceBean implements Bean<Object> {
 		return _manager.resolveDecorators(Collections.singleton(ip.getType()), getQualifiers());
 	}
 
-	private static final Set<Annotation> DEFAULT_QUALIFIERS = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral	.INSTANCE);
-
 	private final BeanManagerImpl _manager;
+	private final Set<Annotation> _qualifiers;
 	private final ReferenceDependency _referenceDependency;
 	private final Set<Type> _types;
 

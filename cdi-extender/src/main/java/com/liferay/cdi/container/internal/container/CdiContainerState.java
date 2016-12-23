@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.liferay.cdi.container.internal;
+package com.liferay.cdi.container.internal.container;
 
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
@@ -34,8 +35,6 @@ import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.service.cdi.CdiListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.liferay.cdi.container.internal.container.CdiContainerService;
 
 public class CdiContainerState {
 
@@ -113,6 +112,10 @@ public class CdiContainerState {
 
 			updateState(event);
 
+			if (_cdiEventProducer != null) {
+				_cdiEventProducer.fire(event);
+			}
+
 			for (CdiListener listener : _listeners.values()) {
 				try {
 					listener.cdiEvent(event);
@@ -143,6 +146,10 @@ public class CdiContainerState {
 
 	public void fire(CdiEvent.State state, Throwable cause, BeanManager beanManager) {
 		fire(new CdiEvent(state, _bundle, _extenderBundle, cause), beanManager);
+	}
+
+	public void setEventProducer(Event<CdiEvent> cdiEventProducer) {
+		_cdiEventProducer = cdiEventProducer;
 	}
 
 	private void updateState(CdiEvent event) {
@@ -177,6 +184,7 @@ public class CdiContainerState {
 
 	private final ServiceRegistration<CdiContainer> _cdiContainerRegistration;
 	private final CdiContainerService _cdiContainerService;
+	private volatile Event<CdiEvent> _cdiEventProducer;
 	private final Bundle _extenderBundle;
 	private AtomicReference<CdiEvent.State> _lastState = new AtomicReference<CdiEvent.State>(CdiEvent.State.CREATING);
 	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;

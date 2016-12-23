@@ -9,14 +9,8 @@ public class CdiContainerTests extends AbstractTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
-		cdiBundle.start();
+		super.setUp();
 		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		cdiBundle.uninstall();
 	}
 
 	public void testGetBeanFromCdiContainerService() throws Exception {
@@ -36,7 +30,7 @@ public class CdiContainerTests extends AbstractTestCase {
 			currentThread.setContextClassLoader(bundleWiring.getClassLoader());
 
 			BeanManager beanManager = CDI.current().getBeanManager();
-	
+
 			assertNotNull(beanManager);
 			assertPojoExists(beanManager);
 		}

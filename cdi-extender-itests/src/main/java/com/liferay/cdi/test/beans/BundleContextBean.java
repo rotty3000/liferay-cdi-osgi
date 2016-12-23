@@ -6,10 +6,10 @@ import javax.inject.Inject;
 import org.osgi.framework.BundleContext;
 
 import com.liferay.cdi.test.interfaces.BeanThingy;
-import com.liferay.cdi.test.interfaces.TestQualifier;
+import com.liferay.cdi.test.interfaces.BundleContextBeanQualifier;
 
 @ApplicationScoped
-@TestQualifier
+@BundleContextBeanQualifier
 public class BundleContextBean implements BeanThingy<BundleContext> {
 
 	@Override

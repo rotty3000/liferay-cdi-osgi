@@ -4,17 +4,15 @@ import java.util.Map;
 
 import org.osgi.framework.ServiceReference;
 
-import com.liferay.cdi.test.components.DSServicePrototypeScope;
-
-public interface FieldInjectedReference {
+public interface FieldInjectedReference<T> {
 
 	public Map<String, Object> getProperties();
 
-	public ServiceReference<DSServicePrototypeScope> getReference1();
+	public ServiceReference<T> getGenericReference();
 
 	@SuppressWarnings("rawtypes")
-	public ServiceReference getReference2();
+	public ServiceReference getRawReference();
 
-	public DSServicePrototypeScope getService();
+	public T getService();
 
 }

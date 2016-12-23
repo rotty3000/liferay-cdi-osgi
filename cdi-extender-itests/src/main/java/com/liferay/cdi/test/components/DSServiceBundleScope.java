@@ -3,15 +3,17 @@ package com.liferay.cdi.test.components;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import com.liferay.cdi.test.components.DSServiceBundleScope;
+import com.liferay.cdi.test.interfaces.BundleScoped;
 
 @Component(
-	property = {
-		"scope=bundle"
-	},
-	scope = ServiceScope.BUNDLE,
-	service = DSServiceBundleScope.class
+	property = {"key=value"},
+	scope = ServiceScope.BUNDLE
 )
-public class DSServiceBundleScope {
+public class DSServiceBundleScope implements BundleScoped {
+
+	@Override
+	public Object get() {
+		return this;
+	}
 
 }

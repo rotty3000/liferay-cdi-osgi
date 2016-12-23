@@ -23,10 +23,8 @@
 				<configuration>
 					<includes>
 						<include>META-INF/*</include>
-						<include>OSGI-INF/*</include>
 						<include>OSGI-OPT/*</include>
 						<include>com/liferay/cdi/test/cases/*</include>
-						<include>com/liferay/cdi/test/components/*</include>
 						<include>com/liferay/cdi/test/interfaces/*</include>
 						<include>*.jar</include>
 					</includes>

@@ -1,5 +1,5 @@
 Bundle-Description: Integration Test bundle for the CDI Weld Container
-Export-Package: ${p}.cases.*,${p}.components.*,${p}.interfaces.*
+Export-Package: ${p}.cases.*,${p}.interfaces.*
 Test-Cases: \
 	${classes;CONCRETE;EXTENDS;${p}.cases.AbstractTestCase},\
 	${classes;CONCRETE;ANNOTATED;org.junit.Test}
@@ -20,7 +20,8 @@ p = com.liferay.cdi.test
 # Finally, include the `-make'd` jars in the test bundle. This also happens to trigger the make function
 # so don't forget to list new jars here as new bnd files are added into the recipe dir.
 -includeresource:\
-	basic-beans.jar
+	basic-beans.jar,\
+	ds-one.jar
 
 # Don't forget that we had to coax the `maven-jar-plugin` NOT to include the `sub-bundle` packages in
 # the root bundle:

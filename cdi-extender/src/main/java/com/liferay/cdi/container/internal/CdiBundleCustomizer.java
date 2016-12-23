@@ -32,6 +32,7 @@ import org.osgi.util.tracker.BundleTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.liferay.cdi.container.internal.container.CdiContainerState;
 import com.liferay.cdi.container.internal.container.Phase_1_Init;
 
 public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init> {

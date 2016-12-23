@@ -12,22 +12,16 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BundleContextBeanQualifier;
 import com.liferay.cdi.test.interfaces.FieldInjectedReference;
-import com.liferay.cdi.test.interfaces.TestQualifier;
 
 @SuppressWarnings("rawtypes")
 public class CdiBeanTests extends AbstractTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		cdiBundle = bundleContext.installBundle(null , getBundle("basic-beans.jar"));
-		cdiBundle.start();
+		super.setUp();
 		cdiContainer = waitForCdiContainer(cdiBundle.getBundleId());
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		cdiBundle.uninstall();
 	}
 
 	public void testConstructorInjectedService() throws Exception {
@@ -46,9 +40,9 @@ public class CdiBeanTests extends AbstractTestCase {
 		assertEquals("PREFIXCONSTRUCTOR", bean.doSomething());
 	}
 
-	public void testFieldInjectedReference() throws Exception {
+	public void testFieldInjectedReference_BundleScoped() throws Exception {
 		Iterator<ServiceReference<FieldInjectedReference>> iterator = bundleContext.getServiceReferences(
-			FieldInjectedReference.class, String.format("(objectClass=*.%s)","FieldInjectedReferenceImpl")).iterator();
+			FieldInjectedReference.class, String.format("(objectClass=*.%s)","FieldInjectedBundleScopedImpl")).iterator();
 
 		assertTrue(iterator.hasNext());
 
@@ -60,12 +54,34 @@ public class CdiBeanTests extends AbstractTestCase {
 
 		assertNotNull(fieldInjectedReference);
 		assertNotNull(fieldInjectedReference.getProperties());
-		assertNotNull(fieldInjectedReference.getReference1());
-		assertNotNull(fieldInjectedReference.getReference2());
+		assertNotNull(fieldInjectedReference.getGenericReference());
+		assertNotNull(fieldInjectedReference.getRawReference());
 		assertNotNull(fieldInjectedReference.getService());
 		assertEquals("value", fieldInjectedReference.getProperties().get("key"));
-		assertEquals("value", fieldInjectedReference.getReference1().getProperty("key"));
-		assertEquals("value", fieldInjectedReference.getReference2().getProperty("key"));
+		assertEquals("value", fieldInjectedReference.getGenericReference().getProperty("key"));
+		assertEquals("value", fieldInjectedReference.getRawReference().getProperty("key"));
+	}
+
+	public void testFieldInjectedReference_PrototypeScoped() throws Exception {
+		Iterator<ServiceReference<FieldInjectedReference>> iterator = bundleContext.getServiceReferences(
+			FieldInjectedReference.class, String.format("(objectClass=*.%s)","FieldInjectedPrototypeScopedImpl")).iterator();
+
+		assertTrue(iterator.hasNext());
+
+		ServiceReference<FieldInjectedReference> serviceReference = iterator.next();
+
+		assertNotNull(serviceReference);
+
+		FieldInjectedReference fieldInjectedReference = bundleContext.getService(serviceReference);
+
+		assertNotNull(fieldInjectedReference);
+		assertNotNull(fieldInjectedReference.getProperties());
+		assertNotNull(fieldInjectedReference.getGenericReference());
+		assertNotNull(fieldInjectedReference.getRawReference());
+		assertNotNull(fieldInjectedReference.getService());
+		assertEquals("value", fieldInjectedReference.getProperties().get("key"));
+		assertEquals("value", fieldInjectedReference.getGenericReference().getProperty("key"));
+		assertEquals("value", fieldInjectedReference.getRawReference().getProperty("key"));
 	}
 
 	public void testFieldInjectedService() throws Exception {
@@ -123,7 +139,7 @@ public class CdiBeanTests extends AbstractTestCase {
 		assertNotNull(beanManager);
 
 		@SuppressWarnings("serial")
-		Set<Bean<?>> beans = beanManager.getBeans(Object.class, new AnnotationLiteral<TestQualifier>() {});
+		Set<Bean<?>> beans = beanManager.getBeans(Object.class, new AnnotationLiteral<BundleContextBeanQualifier>() {});
 		Bean<?> bean = beanManager.resolve(beans);
 		CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
 		Object bcb = beanManager.getReference(bean, Object.class, ctx);

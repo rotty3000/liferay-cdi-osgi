@@ -50,8 +50,6 @@ import org.osgi.service.cdi.annotations.ServiceProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.container.internal.CdiContainerState;
-
 public class Phase_4_Publish {
 
 	public Phase_4_Publish(

@@ -37,13 +37,13 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cdi.CdiEvent;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-
-import com.liferay.cdi.container.internal.CdiContainerState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Phase_3_Reference {
 
 	public Phase_3_Reference(
-		Bundle bundle, CdiContainerState cdiContainerState, Map<ServiceReference<Extension>, 
+		Bundle bundle, CdiContainerState cdiContainerState, Map<ServiceReference<Extension>,
 		Metadata<Extension>> extensions, Collection<String> beanClassNames, BeansXml beansXml) {
 
 		_bundle = bundle;
@@ -70,16 +70,17 @@ public class Phase_3_Reference {
 
 	public void open() {
 		BeanDeploymentArchive beanDeploymentArchive = new BundleDeploymentArchive(
-			_bundleWiring, _cdiContainerState.getId(), _beanClassNames, _beansXml, 
+			_bundleWiring, _cdiContainerState.getId(), _beanClassNames, _beansXml,
 			_cdiContainerState.getExtenderBundle());
-		
+
 		WeldBootstrap bootstrap = new WeldBootstrap();
 
 		List<Metadata<Extension>> extensions = new ArrayList<>();
 
 		// Add the internal extensions
 		extensions.add(
-			new ExtensionMetadata(new ReferenceExtension(_referenceDependencies, _bundleContext), _bundle.toString()));
+			new ExtensionMetadata(
+				new ReferenceExtension(_cdiContainerState, _referenceDependencies, _bundleContext), _bundle.toString()));
 
 		// Add extensions found from the bundle's classloader, such as those in the Bundle-ClassPath
 		for (Metadata<Extension> meta : bootstrap.loadExtensions(_bundleWiring.getClassLoader())) {
@@ -119,6 +120,8 @@ public class Phase_3_Reference {
 		}
 	}
 
+	private static final Logger _log = LoggerFactory.getLogger(Phase_3_Reference.class);
+
 	private final Collection<String> _beanClassNames;
 	private final BeansXml _beansXml;
 	private final Bundle _bundle;
@@ -156,6 +159,9 @@ public class Phase_3_Reference {
 				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _beanDeploymentArchive);
 
 				_publishPhase.open(_bootstrap);
+			}
+			else if (_log.isDebugEnabled()) {
+				_log.debug("CDIe - Waiting for {}", _referenceDependencies);
 			}
 
 			return trackedDependency;

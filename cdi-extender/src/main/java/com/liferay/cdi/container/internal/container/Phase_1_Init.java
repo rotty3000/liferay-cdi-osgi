@@ -23,7 +23,6 @@ import org.jboss.weld.xml.BeansXmlParser;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.liferay.cdi.container.internal.CdiContainerState;
 import com.liferay.cdi.container.internal.locate.ClassLocaterResult;
 import com.liferay.cdi.container.internal.locate.ClassLocater;
 

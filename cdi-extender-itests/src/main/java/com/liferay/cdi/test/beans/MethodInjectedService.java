@@ -11,7 +11,7 @@ import com.liferay.cdi.test.interfaces.Pojo;
 public class MethodInjectedService implements BeanThingy<Pojo> {
 
 	@Inject
-	public void setPojo(PojoImpl pojo) {
+	public void setPojo(Pojo pojo) {
 		_pojo = pojo;
 	}
 
@@ -21,10 +21,10 @@ public class MethodInjectedService implements BeanThingy<Pojo> {
 	}
 
 	@Override
-	public com.liferay.cdi.test.interfaces.Pojo getThingy() {
+	public Pojo getThingy() {
 		return _pojo;
 	}
 
-	private PojoImpl _pojo;
+	private Pojo _pojo;
 
 }
