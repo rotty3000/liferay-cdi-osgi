@@ -49,21 +49,12 @@ public class Activator implements BundleActivator {
 			_bundleContext, Bundle.ACTIVE | Bundle.STARTING,
 			new CdiBundleCustomizer(_bundleContext.getBundle(), _listeners));
 
-		Thread thread = new Thread(new Runnable() {
+		_listenerTracker.open();
+		_bundleTracker.open();
 
-			@Override
-			public void run() {
-				_listenerTracker.open();
-				_bundleTracker.open();
-
-				if (_log.isDebugEnabled()) {
-					_log.debug("CDIe - started {}", bundleContext.getBundle());
-				}
-			}
-
-		});
-
-		thread.start();
+		if (_log.isDebugEnabled()) {
+			_log.debug("CDIe - started {}", bundleContext.getBundle());
+		}
 	}
 
 	@Override
