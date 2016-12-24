@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
@@ -75,6 +74,10 @@ public class CdiContainerState {
 		}
 	}
 
+	public BeanManager getBeanManager() {
+		return _beanManager;
+	}
+
 	public Bundle getExtenderBundle() {
 		return _extenderBundle;
 	}
@@ -88,10 +91,6 @@ public class CdiContainerState {
 	}
 
 	public void fire(CdiEvent event) {
-		fire(event, null);
-	}
-
-	public void fire(CdiEvent event, BeanManager beanManager) {
 		try {
 			_lock.lock();
 
@@ -106,14 +105,10 @@ public class CdiContainerState {
 				_log.debug("CDIe - Event {}", event, event.getCause());
 			}
 
-			if (beanManager != null) {
-				_cdiContainerService.setBeanManager(beanManager);
-			}
-
 			updateState(event);
 
-			if (_cdiEventProducer != null) {
-				_cdiEventProducer.fire(event);
+			if (_beanManager != null) {
+				_beanManager.fireEvent(event);
 			}
 
 			for (CdiListener listener : _listeners.values()) {
@@ -133,23 +128,20 @@ public class CdiContainerState {
 	}
 
 	public void fire(CdiEvent.State state) {
-		fire(new CdiEvent(state, _bundle, _extenderBundle), null);
+		fire(new CdiEvent(state, _bundle, _extenderBundle));
+	}
+
+	public void fire(CdiEvent.State state, String payload) {
+		fire(new CdiEvent(state, _bundle, _extenderBundle, payload, null));
 	}
 
 	public void fire(CdiEvent.State state, Throwable cause) {
-		fire(new CdiEvent(state, _bundle, _extenderBundle, cause), null);
+		fire(new CdiEvent(state, _bundle, _extenderBundle, null, cause));
 	}
 
-	public void fire(CdiEvent.State state, BeanManager beanManager) {
-		fire(new CdiEvent(state, _bundle, _extenderBundle), beanManager);
-	}
-
-	public void fire(CdiEvent.State state, Throwable cause, BeanManager beanManager) {
-		fire(new CdiEvent(state, _bundle, _extenderBundle, cause), beanManager);
-	}
-
-	public void setEventProducer(Event<CdiEvent> cdiEventProducer) {
-		_cdiEventProducer = cdiEventProducer;
+	public void setBeanManager(BeanManager beanManager) {
+		_beanManager = beanManager;
+		_cdiContainerService.setBeanManager(beanManager);
 	}
 
 	private void updateState(CdiEvent event) {
@@ -180,11 +172,11 @@ public class CdiContainerState {
 	}
 
 	private static final Logger _log = LoggerFactory.getLogger(CdiContainerState.class);
-	private final Bundle _bundle;
 
+	private volatile BeanManager _beanManager;
+	private final Bundle _bundle;
 	private final ServiceRegistration<CdiContainer> _cdiContainerRegistration;
 	private final CdiContainerService _cdiContainerService;
-	private volatile Event<CdiEvent> _cdiEventProducer;
 	private final Bundle _extenderBundle;
 	private AtomicReference<CdiEvent.State> _lastState = new AtomicReference<CdiEvent.State>(CdiEvent.State.CREATING);
 	private final Map<ServiceReference<CdiListener>, CdiListener> _listeners;

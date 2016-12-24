@@ -37,6 +37,8 @@ import org.osgi.service.cdi.CdiEvent;
 import org.osgi.service.cdi.CdiExtenderConstants;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Phase_2_Extension {
 
@@ -62,7 +64,7 @@ public class Phase_2_Extension {
 		}
 		else {
 			_referencePhase.close();
-			
+
 			_referencePhase = null;
 		}
 
@@ -75,9 +77,9 @@ public class Phase_2_Extension {
 		_cdiContainerState.fire(CdiEvent.State.CREATING);
 
 		if (!_extensionDependencies.isEmpty()) {
-			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS);
-
 			Filter filter = FilterBuilder.createExtensionFilter(_extensionDependencies);
+
+			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS, filter.toString());
 
 			_extensionTracker = new ServiceTracker<>(_bundleContext, filter, new ExtensionPhaseCustomizer());
 
@@ -109,6 +111,8 @@ public class Phase_2_Extension {
 
 		return extensionDependencies;
 	}
+
+	private static final Logger _log = LoggerFactory.getLogger(Phase_2_Extension.class);
 
 	private final Collection<String> _beanClassNames;
 	private final BeansXml _beansXml;
@@ -145,6 +149,9 @@ public class Phase_2_Extension {
 
 				_referencePhase.open();
 			}
+			else if (_log.isDebugEnabled()) {
+				_log.debug("CDIe - Still waiting for extensions {}", _extensionDependencies);
+			}
 
 			return trackedDependency;
 		}
@@ -157,13 +164,22 @@ public class Phase_2_Extension {
 		public void removedService(ServiceReference<Extension> reference, ExtensionDependency extentionDependency) {
 			if (_extensionDependencies.isEmpty()) {
 				_referencePhase.close();
-				
+
 				_referencePhase = null;
 
 				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_EXTENSIONS);
 			}
 			_extensions.remove(reference);
-			_bundleContext.ungetService(reference);
+
+			try {
+				_bundleContext.ungetService(reference);
+			}
+			catch (IllegalStateException ise) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("CDIe - UngetService resulted in error", ise);
+				}
+			}
+
 			_extensionDependencies.add(extentionDependency);
 		}
 

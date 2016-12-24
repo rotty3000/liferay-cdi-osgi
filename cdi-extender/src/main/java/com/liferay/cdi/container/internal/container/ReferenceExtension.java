@@ -16,29 +16,19 @@
 
 package com.liferay.cdi.container.internal.container;
 
-import static com.liferay.cdi.container.internal.util.Reflection.cast;
-
 import java.util.List;
 
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.spi.AfterBeanDiscovery;
 import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
-import javax.inject.Inject;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.service.cdi.CdiEvent;
 import org.osgi.service.cdi.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +36,9 @@ import org.slf4j.LoggerFactory;
 import com.liferay.cdi.container.internal.bean.BundleContextBean;
 
 @ApplicationScoped
-@SuppressWarnings("rawtypes")
 public class ReferenceExtension implements Extension {
 
-	public ReferenceExtension(
-		CdiContainerState cdiContainerState, List<ReferenceDependency> referenceDependencies,
-		BundleContext bundleContext) {
-
-		_cdiContainerState = cdiContainerState;
+	public ReferenceExtension(List<ReferenceDependency> referenceDependencies, BundleContext bundleContext) {
 		_referenceDependencies = referenceDependencies;
 		_bundleContext = bundleContext;
 	}
@@ -65,16 +50,9 @@ public class ReferenceExtension implements Extension {
 
 		abd.addBean(new BundleContextBean(_bundleContext));
 
-		selfInjectEventProducer(manager);
-
 		if (_log.isDebugEnabled()) {
 			_log.debug("CDIe - Bean discovery complete");
 		}
-	}
-
-	@PreDestroy
-	void destroy() {
-		_cdiContainerState.setEventProducer(null);
 	}
 
 	void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd) {
@@ -83,7 +61,9 @@ public class ReferenceExtension implements Extension {
 		}
 	}
 
-	void processInjectionTarget(@Observes ProcessInjectionPoint pip, BeanManager manager) {
+	void processInjectionTarget(
+		@Observes @SuppressWarnings("rawtypes") ProcessInjectionPoint pip, BeanManager manager) {
+
 		InjectionPoint injectionPoint = pip.getInjectionPoint();
 		Annotated annotated = injectionPoint.getAnnotated();
 		Reference reference = annotated.getAnnotation(Reference.class);
@@ -109,26 +89,9 @@ public class ReferenceExtension implements Extension {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	void selfInjectEventProducer(BeanManager manager) {
-		AnnotatedType<ReferenceExtension> type = manager.createAnnotatedType(cast(getClass()));
-		InjectionTarget<ReferenceExtension> injectionTarget = manager.createInjectionTarget(type);
-		CreationalContext creationalContext = manager.createCreationalContext(null);
-
-		injectionTarget.inject(this, creationalContext);
-		creationalContext.release();
-
-		_cdiContainerState.setEventProducer(_eventProducer);
-	}
-
-	@Any
-	@Inject
-	volatile Event<CdiEvent> _eventProducer;
-
 	private static final Logger _log = LoggerFactory.getLogger(ReferenceExtension.class);
 
 	private final BundleContext _bundleContext;
-	private final CdiContainerState _cdiContainerState;
 	private final List<ReferenceDependency> _referenceDependencies;
 
 }

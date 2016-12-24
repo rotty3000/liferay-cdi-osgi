@@ -35,13 +35,11 @@ import javax.inject.Singleton;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.weld.bootstrap.WeldBootstrap;
-import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.PrototypeServiceFactory;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.cdi.CdiContainer;
 import org.osgi.service.cdi.CdiEvent;
 import org.osgi.service.cdi.annotations.BundleScoped;
 import org.osgi.service.cdi.annotations.PrototypeScoped;
@@ -52,12 +50,9 @@ import org.slf4j.LoggerFactory;
 
 public class Phase_4_Publish {
 
-	public Phase_4_Publish(
-		Bundle bundle, CdiContainerState cdiContainerState, BeanDeploymentArchive beanDeploymentArchive) {
-
+	public Phase_4_Publish(Bundle bundle, CdiContainerState cdiContainerState) {
 		_bundle = bundle;
 		_cdiContainerState = cdiContainerState;
-		_beanDeploymentArchive = beanDeploymentArchive;
 		_bundleContext = _bundle.getBundleContext();
 	}
 
@@ -96,15 +91,19 @@ public class Phase_4_Publish {
 				}
 			}
 		}
+
+		_bootstrap.shutdown();
 	}
 
 	public void open(WeldBootstrap bootstrap) {
 		_cdiContainerState.fire(CdiEvent.State.SATISFIED);
 
-		bootstrap.validateBeans();
-		bootstrap.endInitialization();
+		_bootstrap = bootstrap;
 
-		BeanManager beanManager = bootstrap.getManager(_beanDeploymentArchive);
+		_bootstrap.validateBeans();
+		_bootstrap.endInitialization();
+
+		BeanManager beanManager = _cdiContainerState.getBeanManager();
 
 		Set<Bean<?>> allBeans = beanManager.getBeans(Object.class, CdiContainerState.ANY);
 
@@ -115,7 +114,7 @@ public class Phase_4_Publish {
 		_beanManagerRegistration = _bundle.getBundleContext().registerService(
 			BeanManager.class, beanManager, null);
 
-		_cdiContainerState.fire(CdiEvent.State.CREATED, beanManager);
+		_cdiContainerState.fire(CdiEvent.State.CREATED);
 	}
 
 	private String[] getClassNames(Service service, Bean<?> bean) {
@@ -214,14 +213,13 @@ public class Phase_4_Publish {
 
 	private static final Logger _log = LoggerFactory.getLogger(Phase_4_Publish.class);
 
-	private final BeanDeploymentArchive _beanDeploymentArchive;
+	private WeldBootstrap _bootstrap;
 	private final Bundle _bundle;
 	private final BundleContext _bundleContext;
 	private final CdiContainerState _cdiContainerState;
 	private final List<ServiceRegistration<?>> _registrations = new CopyOnWriteArrayList<>();
 
 	private ServiceRegistration<BeanManager> _beanManagerRegistration;
-	private ServiceRegistration<CdiContainer> _cdiContainerRegistration;
 	private ServiceRegistration<ObjectFactory> _objectFactoryRegistration;
 
 	@SuppressWarnings({"rawtypes", "unchecked", "unused"})

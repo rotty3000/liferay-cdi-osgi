@@ -34,24 +34,20 @@ public class CdiEvent {
 		FAILURE
 	}
 
-	public CdiEvent(CdiEvent event, boolean replay) {
-		this(event.getState(), event.getBundle(), event.getExtenderBundle(), event.getCause(), replay);
-	}
-
 	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle) {
-		this(type, bundle, extenderBundle, null, false);
+		this(type, bundle, extenderBundle, null, null);
 	}
 
-	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause) {
-		this(type, bundle, extenderBundle, cause, false);
+	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle, String payload) {
+		this(type, bundle, extenderBundle, payload, null);
 	}
 
-	private CdiEvent(State type, Bundle bundle, Bundle extenderBundle, Throwable cause, boolean replay) {
+	public CdiEvent(State type, Bundle bundle, Bundle extenderBundle, String payload, Throwable cause) {
 		this.type = type;
 		this.bundle = bundle;
 		this.extenderBundle = extenderBundle;
+		this.payload = payload;
 		this.cause = cause;
-		this.replay = replay;
 		this.timestamp = System.currentTimeMillis();
 
 		StringBuilder sb = new StringBuilder();
@@ -59,18 +55,18 @@ public class CdiEvent {
 		sb.append("{type:'");
 		sb.append(this.type);
 		sb.append("',timestamp:");
-		sb.append(timestamp);
+		sb.append(this.timestamp);
 		sb.append(",bundle:'");
 		sb.append(this.bundle);
 		sb.append("',extenderBundle:'");
 		sb.append(this.extenderBundle);
-		if (cause != null) {
+		if (this.payload != null) {
+			sb.append("',payload:'");
+			sb.append(this.payload);
+		}
+		if (this.cause != null) {
 			sb.append("',cause:'");
 			sb.append(this.cause.getMessage());
-		}
-		if (replay) {
-			sb.append("',replay:'");
-			sb.append(this.replay);
 		}
 		sb.append("'}");
 
@@ -89,16 +85,16 @@ public class CdiEvent {
 		return extenderBundle;
 	}
 
+	public String getPayload() {
+		return payload;
+	}
+
 	public long getTimestamp() {
 		return timestamp;
 	}
 
 	public State getState() {
 		return type;
-	}
-
-	public boolean isReplay() {
-		return replay;
 	}
 
 	@Override
@@ -109,7 +105,7 @@ public class CdiEvent {
 	private final Bundle bundle;
 	private final Throwable cause;
 	private final Bundle extenderBundle;
-	private final boolean replay;
+	private final String payload;
 	private final long timestamp;
 	private final State type;
 	private final String string;

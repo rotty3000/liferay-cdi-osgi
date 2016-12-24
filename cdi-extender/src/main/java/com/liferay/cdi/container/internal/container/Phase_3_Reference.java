@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -79,8 +80,7 @@ public class Phase_3_Reference {
 
 		// Add the internal extensions
 		extensions.add(
-			new ExtensionMetadata(
-				new ReferenceExtension(_cdiContainerState, _referenceDependencies, _bundleContext), _bundle.toString()));
+			new ExtensionMetadata(new ReferenceExtension(_referenceDependencies, _bundleContext), _bundle.toString()));
 
 		// Add extensions found from the bundle's classloader, such as those in the Bundle-ClassPath
 		for (Metadata<Extension> meta : bootstrap.loadExtensions(_bundleWiring.getClassLoader())) {
@@ -95,21 +95,25 @@ public class Phase_3_Reference {
 		Deployment deployment = new BundleDeployment(extensions, beanDeploymentArchive);
 
 		bootstrap.startContainer(new SimpleEnvironment(), deployment);
+
+		BeanManager beanManager = bootstrap.getManager(beanDeploymentArchive);
+
+		_cdiContainerState.setBeanManager(beanManager);
+
 		bootstrap.startInitialization();
 		bootstrap.deployBeans();
 
 		if (!_referenceDependencies.isEmpty()) {
-			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
-
 			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
-			_serviceTracker = new ServiceTracker<>(
-				_bundleContext, filter, new ReferencePhaseCustomizer(bootstrap, beanDeploymentArchive));
+			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES, filter.toString());
+
+			_serviceTracker = new ServiceTracker<>(_bundleContext, filter, new ReferencePhaseCustomizer(bootstrap));
 
 			_serviceTracker.open();
 		}
 		else {
-			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, beanDeploymentArchive);
+			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState);
 
 			_publishPhase.open(bootstrap);
 		}
@@ -131,9 +135,8 @@ public class Phase_3_Reference {
 
 	private class ReferencePhaseCustomizer implements ServiceTrackerCustomizer<Object, ReferenceDependency> {
 
-		public ReferencePhaseCustomizer(WeldBootstrap bootstrap, BeanDeploymentArchive beanDeploymentArchive) {
+		public ReferencePhaseCustomizer(WeldBootstrap bootstrap) {
 			_bootstrap = bootstrap;
-			_beanDeploymentArchive = beanDeploymentArchive;
 		}
 
 		@Override
@@ -151,12 +154,12 @@ public class Phase_3_Reference {
 			}
 
 			if ((trackedDependency != null) && _referenceDependencies.isEmpty()) {
-				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _beanDeploymentArchive);
+				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState);
 
 				_publishPhase.open(_bootstrap);
 			}
 			else if (_log.isDebugEnabled()) {
-				_log.debug("CDIe - Waiting for {}", _referenceDependencies);
+				_log.debug("CDIe - Still waiting for serivces {}", _referenceDependencies);
 			}
 
 			return trackedDependency;
@@ -178,7 +181,6 @@ public class Phase_3_Reference {
 			_referenceDependencies.add(referenceDependency);
 		}
 
-		private final BeanDeploymentArchive _beanDeploymentArchive;
 		private final WeldBootstrap _bootstrap;
 
 	}
