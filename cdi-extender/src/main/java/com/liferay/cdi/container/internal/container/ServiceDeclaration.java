@@ -37,6 +37,7 @@ import org.osgi.service.cdi.annotations.ServiceProperty;
 
 public class ServiceDeclaration {
 
+	@SuppressWarnings("unchecked")
 	public ServiceDeclaration(Service service, @SuppressWarnings("rawtypes") Bean bean, BeanManager beanManager) {
 		_service = service;
 		_bean = bean;
@@ -54,6 +55,7 @@ public class ServiceDeclaration {
 		// TODO also read properties via Qualifiers
 
 		_properties = properties;
+
 		_creationalContext = _beanManager.createCreationalContext(_bean);
 	}
 
@@ -92,7 +94,7 @@ public class ServiceDeclaration {
 		return _properties;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	public Object getServiceInstance() {
 		if (Singleton.class.isInstance(_bean.getScope())) {
 			return _bean.create(_creationalContext);
@@ -107,6 +109,7 @@ public class ServiceDeclaration {
 	@SuppressWarnings("rawtypes")
 	private final Bean _bean;
 	private final BeanManager _beanManager;
+	@SuppressWarnings("rawtypes")
 	private final CreationalContext _creationalContext;
 	private final Dictionary<String, Object> _properties;
 	private final Service _service;

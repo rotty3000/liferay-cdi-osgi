@@ -26,8 +26,6 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.ProcessBean;
 
 import org.osgi.service.cdi.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ServiceExtension implements Extension {
@@ -47,8 +45,6 @@ public class ServiceExtension implements Extension {
 
 		_services.add(new ServiceDeclaration(service, bean, beanManager));
 	}
-
-	private static final Logger _log = LoggerFactory.getLogger(ServiceExtension.class);
 
 	private final List<ServiceDeclaration> _services;
 
