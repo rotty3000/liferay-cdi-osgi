@@ -80,7 +80,8 @@ public class Phase_3_Reference {
 
 		// Add the internal extensions
 		extensions.add(
-			new ExtensionMetadata(new ReferenceExtension(_referenceDependencies, _bundleContext), _bundle.toString()));
+			new ExtensionMetadata(new ReferenceExtension(_references, _bundleContext), _bundle.toString()));
+		extensions.add(new ExtensionMetadata(new ServiceExtension(_services), _bundle.toString()));
 
 		// Add extensions found from the bundle's classloader, such as those in the Bundle-ClassPath
 		for (Metadata<Extension> meta : bootstrap.loadExtensions(_bundleWiring.getClassLoader())) {
@@ -103,8 +104,8 @@ public class Phase_3_Reference {
 		bootstrap.startInitialization();
 		bootstrap.deployBeans();
 
-		if (!_referenceDependencies.isEmpty()) {
-			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
+		if (!_references.isEmpty()) {
+			Filter filter = FilterBuilder.createReferenceFilter(_references);
 
 			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES, filter.toString());
 
@@ -113,7 +114,7 @@ public class Phase_3_Reference {
 			_serviceTracker.open();
 		}
 		else {
-			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState);
+			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _services);
 
 			_publishPhase.open(bootstrap);
 		}
@@ -129,7 +130,8 @@ public class Phase_3_Reference {
 	private final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
 	private Phase_4_Publish _publishPhase;
-	private final List<ReferenceDependency> _referenceDependencies = new CopyOnWriteArrayList<>();
+	private final List<ReferenceDependency> _references = new CopyOnWriteArrayList<>();
+	private final List<ServiceDeclaration> _services = new CopyOnWriteArrayList<>();
 
 	private ServiceTracker<?, ?> _serviceTracker;
 
@@ -143,9 +145,9 @@ public class Phase_3_Reference {
 		public ReferenceDependency addingService(ServiceReference<Object> reference) {
 			ReferenceDependency trackedDependency = null;
 
-			for (ReferenceDependency referenceDependency : _referenceDependencies) {
+			for (ReferenceDependency referenceDependency : _references) {
 				if (referenceDependency.matches(reference)) {
-					_referenceDependencies.remove(referenceDependency);
+					_references.remove(referenceDependency);
 
 					trackedDependency = referenceDependency;
 
@@ -153,13 +155,13 @@ public class Phase_3_Reference {
 				}
 			}
 
-			if ((trackedDependency != null) && _referenceDependencies.isEmpty()) {
-				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState);
+			if ((trackedDependency != null) && _references.isEmpty()) {
+				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _services);
 
 				_publishPhase.open(_bootstrap);
 			}
 			else if (_log.isDebugEnabled()) {
-				_log.debug("CDIe - Still waiting for serivces {}", _referenceDependencies);
+				_log.debug("CDIe - Still waiting for serivces {}", _references);
 			}
 
 			return trackedDependency;
@@ -171,14 +173,14 @@ public class Phase_3_Reference {
 
 		@Override
 		public void removedService(ServiceReference<Object> reference, ReferenceDependency referenceDependency) {
-			if (_referenceDependencies.isEmpty()) {
+			if (_references.isEmpty()) {
 				_publishPhase.close();
 
 				_publishPhase = null;
 
 				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
 			}
-			_referenceDependencies.add(referenceDependency);
+			_references.add(referenceDependency);
 		}
 
 		private final WeldBootstrap _bootstrap;
