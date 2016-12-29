@@ -34,8 +34,13 @@ import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cdi.annotations.Service;
 import org.osgi.service.cdi.annotations.ServiceProperty;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.StandardConverter;
 
 public class ServiceDeclaration {
+
+	@SuppressWarnings("deprecation")
+	private static final Converter _converter = new StandardConverter();
 
 	@SuppressWarnings("unchecked")
 	public ServiceDeclaration(Service service, @SuppressWarnings("rawtypes") Bean bean, BeanManager beanManager) {
@@ -46,13 +51,14 @@ public class ServiceDeclaration {
 		Dictionary<String, Object> properties = new Hashtable<>();
 
 		for (ServiceProperty serviceProperty : _service.properties()) {
+			Type type = serviceProperty.type().getType();
+			String[] value = serviceProperty.value().split("\\s*,\\s*");
 
-			// TODO convert value to typed
+			@SuppressWarnings("deprecation")
+			Object object = _converter.convert(value).to(type);
 
-			properties.put(serviceProperty.key(), serviceProperty.value());
+			properties.put(serviceProperty.key(), object);
 		}
-
-		// TODO also read properties via Qualifiers
 
 		_properties = properties;
 
