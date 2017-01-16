@@ -102,10 +102,13 @@ public class ServiceDeclaration {
 
 	@SuppressWarnings({ "unchecked" })
 	public Object getServiceInstance() {
-		if (Singleton.class.isInstance(_bean.getScope())) {
-			return _bean.create(_creationalContext);
+		Class<?> scope = _bean.getScope();
+		if (Singleton.class.isAssignableFrom(scope)) {
+			Object object = _bean.create(_creationalContext);
+			System.out.println("--------------------> SINGLETON: " + object);
+			return object;
 		}
-		else if (ApplicationScoped.class.isInstance(_bean.getScope())) {
+		else if (ApplicationScoped.class.isAssignableFrom(scope)) {
 			return new BundleScopeWrapper();
 		}
 
@@ -125,7 +128,9 @@ public class ServiceDeclaration {
 
 		@Override
 		public Object getService(Bundle bundle, ServiceRegistration registration) {
-			return _bean.create(_creationalContext);
+			Object object = _bean.create(_creationalContext);
+			System.out.println("-------------> BUNDLE GET_SERVICE: " + object);
+			return object;
 		}
 
 		@Override
@@ -140,7 +145,9 @@ public class ServiceDeclaration {
 
 		@Override
 		public Object getService(Bundle bundle, ServiceRegistration registration) {
-			return _bean.create(_creationalContext);
+			Object object = _bean.create(_creationalContext);
+			System.out.println("-------------> PROTOTYPE GET_SERVICE: " + object);
+			return object;
 		}
 
 		@Override

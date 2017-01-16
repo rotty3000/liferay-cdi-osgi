@@ -1,12 +1,13 @@
 package com.liferay.cdi.test.beans;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.osgi.service.cdi.annotations.PropertyType;
 import org.osgi.service.cdi.annotations.Service;
 import org.osgi.service.cdi.annotations.ServiceProperty;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.Pojo;
 
 @Service(
@@ -51,9 +52,10 @@ import com.liferay.cdi.test.interfaces.Pojo;
 		@ServiceProperty(key = "p.String.list", value = "green,black", type = PropertyType.String_List),
 		@ServiceProperty(key = "p.String.set", value = "green,green,black", type = PropertyType.String_Set)
 	},
-	type = {ServiceWithProperties.class, BeanThingy.class}
+	type = {ServiceWithProperties.class, BeanService.class}
 )
-public class ServiceWithProperties implements BeanThingy<Pojo> {
+@Singleton
+public class ServiceWithProperties implements BeanService<Pojo> {
 
 	@Override
 	public String doSomething() {
@@ -61,7 +63,7 @@ public class ServiceWithProperties implements BeanThingy<Pojo> {
 	}
 
 	@Override
-	public com.liferay.cdi.test.interfaces.Pojo getThingy() {
+	public com.liferay.cdi.test.interfaces.Pojo get() {
 		return _pojo;
 	}
 

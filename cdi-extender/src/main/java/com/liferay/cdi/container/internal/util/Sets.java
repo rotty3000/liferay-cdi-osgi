@@ -8,8 +8,26 @@ public class Sets {
 
 	@SafeVarargs
 	public static <T> Set<T> hashSet(T ... elements) {
-		Set<T> set = new HashSet<>();
+		return hashSet0(new HashSet<>(), elements);
+	}
 
+	@SafeVarargs
+	public static <T> Set<T> hashSet(Set<T> from, T ... elements) {
+		return hashSet0(new HashSet<>(from), elements);
+	}
+
+	@SafeVarargs
+	public static <T> Set<T> immutableHashSet(T ... elements) {
+		return immutableHashSet0(new HashSet<>(), elements);
+	}
+
+	@SafeVarargs
+	public static <T> Set<T> immutableHashSet(Set<T> from, T ... elements) {
+		return immutableHashSet0(new HashSet<>(from), elements);
+	}
+
+	@SafeVarargs
+	private static <T> Set<T> hashSet0(Set<T> set, T ... elements) {
 		for (T t : elements) {
 			set.add(t);
 		}
@@ -18,14 +36,8 @@ public class Sets {
 	}
 
 	@SafeVarargs
-	public static <T> Set<T> immutableHashSet(T ... elements) {
-		Set<T> set = new HashSet<>();
-
-		for (T t : elements) {
-			set.add(t);
-		}
-
-		return Collections.unmodifiableSet(set);
+	private static <T> Set<T> immutableHashSet0(Set<T> set, T ... elements) {
+		return Collections.unmodifiableSet(hashSet0(set, elements));
 	}
 
 }

@@ -5,12 +5,12 @@ import javax.inject.Inject;
 
 import org.osgi.framework.BundleContext;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.BundleContextBeanQualifier;
 
 @ApplicationScoped
 @BundleContextBeanQualifier
-public class BundleContextBean implements BeanThingy<BundleContext> {
+public class BundleContextBean implements BeanService<BundleContext> {
 
 	@Override
 	public String doSomething() {
@@ -18,7 +18,7 @@ public class BundleContextBean implements BeanThingy<BundleContext> {
 	}
 
 	@Override
-	public BundleContext getThingy() {
+	public BundleContext get() {
 		return _bundleContext;
 	}
 

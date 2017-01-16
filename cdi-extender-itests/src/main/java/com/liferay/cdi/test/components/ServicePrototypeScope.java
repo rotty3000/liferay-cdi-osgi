@@ -3,13 +3,13 @@ package com.liferay.cdi.test.components;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import com.liferay.cdi.test.interfaces.BundleScoped;
+import com.liferay.cdi.test.interfaces.PrototypeScoped;
 
 @Component(
 	property = {"key=value"},
-	scope = ServiceScope.BUNDLE
+	scope = ServiceScope.PROTOTYPE
 )
-public class DSServiceBundleScope implements BundleScoped {
+public class ServicePrototypeScope implements PrototypeScoped {
 
 	@Override
 	public Object get() {

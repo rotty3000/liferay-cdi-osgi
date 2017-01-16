@@ -28,6 +28,8 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cdi.annotations.Reference;
 import org.slf4j.Logger;
@@ -44,10 +46,6 @@ public class ReferenceExtension implements Extension {
 	}
 
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery abd, BeanManager manager) {
-		for (ReferenceDependency referenceDependency : _referenceDependencies) {
-			referenceDependency.addBean(abd);
-		}
-
 		abd.addBean(new BundleContextBean(_bundleContext));
 
 		if (_log.isDebugEnabled()) {
@@ -73,8 +71,10 @@ public class ReferenceExtension implements Extension {
 		}
 
 		try {
+			BeanManagerImpl beanManagerImpl = ((BeanManagerProxy)manager).delegate();
+
 			ReferenceDependency referenceDependency = new ReferenceDependency(
-				reference, manager, injectionPoint, _bundleContext);
+				beanManagerImpl, reference, injectionPoint);
 
 			_referenceDependencies.add(referenceDependency);
 

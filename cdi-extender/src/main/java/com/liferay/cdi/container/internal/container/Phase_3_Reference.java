@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
@@ -38,8 +40,6 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.service.cdi.CdiEvent;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Phase_3_Reference {
 
@@ -63,9 +63,18 @@ public class Phase_3_Reference {
 			_serviceTracker = null;
 		}
 		else {
-			_publishPhase.close();
+			_lock.lock();
 
-			_publishPhase = null;
+			try {
+				if (_publishPhase != null) {
+					_publishPhase.close();
+
+					_publishPhase = null;
+				}
+			}
+			finally {
+				_lock.unlock();
+			}
 		}
 	}
 
@@ -80,7 +89,7 @@ public class Phase_3_Reference {
 
 		// Add the internal extensions
 		extensions.add(
-			new ExtensionMetadata(new ReferenceExtension(_references, _bundleContext), _bundle.toString()));
+			new ExtensionMetadata(new ReferenceExtension(_referenceDependencies, _bundleContext), _bundle.toString()));
 		extensions.add(new ExtensionMetadata(new ServiceExtension(_services), _bundle.toString()));
 
 		// Add extensions found from the bundle's classloader, such as those in the Bundle-ClassPath
@@ -104,8 +113,8 @@ public class Phase_3_Reference {
 		bootstrap.startInitialization();
 		bootstrap.deployBeans();
 
-		if (!_references.isEmpty()) {
-			Filter filter = FilterBuilder.createReferenceFilter(_references);
+		if (!_referenceDependencies.isEmpty()) {
+			Filter filter = FilterBuilder.createReferenceFilter(_referenceDependencies);
 
 			_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES, filter.toString());
 
@@ -114,73 +123,104 @@ public class Phase_3_Reference {
 			_serviceTracker.open();
 		}
 		else {
-			_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _services);
+			_lock.lock();
 
-			_publishPhase.open(bootstrap);
+			try {
+				_publishPhase = new Phase_4_Publish(this, bootstrap);
+
+				_publishPhase.open();
+			}
+			finally {
+				_lock.unlock();
+			}
 		}
 	}
 
-	private static final Logger _log = LoggerFactory.getLogger(Phase_3_Reference.class);
-
 	private final Collection<String> _beanClassNames;
 	private final BeansXml _beansXml;
-	private final Bundle _bundle;
+	final Bundle _bundle;
 	private final BundleContext _bundleContext;
 	private final BundleWiring _bundleWiring;
-	private final CdiContainerState _cdiContainerState;
+	final CdiContainerState _cdiContainerState;
 	private final Map<ServiceReference<Extension>, Metadata<Extension>> _extensions;
+	private final Lock _lock = new ReentrantLock(true);
 	private Phase_4_Publish _publishPhase;
-	private final List<ReferenceDependency> _references = new CopyOnWriteArrayList<>();
-	private final List<ServiceDeclaration> _services = new CopyOnWriteArrayList<>();
+	final List<ReferenceDependency> _referenceDependencies = new CopyOnWriteArrayList<>();
+	final List<ServiceDeclaration> _services = new CopyOnWriteArrayList<>();
 
-	private ServiceTracker<?, ?> _serviceTracker;
+	ServiceTracker<?, ?> _serviceTracker;
 
-	private class ReferencePhaseCustomizer implements ServiceTrackerCustomizer<Object, ReferenceDependency> {
+	private class ReferencePhaseCustomizer implements ServiceTrackerCustomizer<Object, Object> {
 
 		public ReferencePhaseCustomizer(WeldBootstrap bootstrap) {
 			_bootstrap = bootstrap;
 		}
 
 		@Override
-		public ReferenceDependency addingService(ServiceReference<Object> reference) {
-			ReferenceDependency trackedDependency = null;
+		public Object addingService(ServiceReference<Object> reference) {
+			_lock.lock();
 
-			for (ReferenceDependency referenceDependency : _references) {
-				if (referenceDependency.matches(reference)) {
-					_references.remove(referenceDependency);
+			try {
+				if (_publishPhase != null) {
+					return null;
+				}
 
-					trackedDependency = referenceDependency;
+				boolean matches = false;
+				boolean resolved = true;
 
-					trackedDependency.resolve(reference);
+				for (ReferenceDependency referenceDependency : _referenceDependencies) {
+					if (referenceDependency.matches(reference)) {
+						referenceDependency.resolve(reference);
+						matches = true;
+					}
+					if (!referenceDependency.isResolved()) {
+						resolved = false;
+					}
+				}
+
+				if (!matches) {
+					return null;
+				}
+
+				if (resolved) {
+					_publishPhase = new Phase_4_Publish(Phase_3_Reference.this, _bootstrap);
+
+					_publishPhase.open();
+				}
+
+				return new Object();
+			}
+			finally {
+				_lock.unlock();
+			}
+		}
+
+		@Override
+		public void modifiedService(ServiceReference<Object> reference, Object object) {
+		}
+
+		@Override
+		public void removedService(ServiceReference<Object> reference, Object object) {
+			_lock.lock();
+
+			try {
+				if (_publishPhase != null) {
+					_publishPhase.close();
+
+					_publishPhase = null;
+
+					_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
+				}
+
+				for (ReferenceDependency referenceDependency : _referenceDependencies) {
+					if (referenceDependency.matches(reference)) {
+						referenceDependency.unresolve(reference);
+					}
 				}
 			}
-
-			if ((trackedDependency != null) && _references.isEmpty()) {
-				_publishPhase = new Phase_4_Publish(_bundle, _cdiContainerState, _services);
-
-				_publishPhase.open(_bootstrap);
+			finally {
+				_lock.unlock();
 			}
-			else if (_log.isDebugEnabled()) {
-				_log.debug("CDIe - Still waiting for serivces {}", _references);
-			}
-
-			return trackedDependency;
-		}
-
-		@Override
-		public void modifiedService(ServiceReference<Object> reference, ReferenceDependency referenceDependency) {
-		}
-
-		@Override
-		public void removedService(ServiceReference<Object> reference, ReferenceDependency referenceDependency) {
-			if (_references.isEmpty()) {
-				_publishPhase.close();
-
-				_publishPhase = null;
-
-				_cdiContainerState.fire(CdiEvent.State.WAITING_FOR_SERVICES);
-			}
-			_references.add(referenceDependency);
 		}
 
 		private final WeldBootstrap _bootstrap;

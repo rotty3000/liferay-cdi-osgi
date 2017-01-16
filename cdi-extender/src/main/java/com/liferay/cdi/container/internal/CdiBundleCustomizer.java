@@ -82,11 +82,11 @@ public class CdiBundleCustomizer implements BundleTrackerCustomizer<Phase_1_Init
 
 	@Override
 	public void removedBundle(Bundle bundle, BundleEvent bundleEvent, Phase_1_Init phase1) {
+		phase1.close();
+
 		if (_log.isDebugEnabled()) {
 			_log.debug("CDIe - bundle removed {}", bundle);
 		}
-
-		phase1.close();
 	}
 
 	private final boolean requiresCdiExtender(Bundle bundle) {

@@ -10,7 +10,7 @@ import javax.enterprise.util.AnnotationLiteral;
 
 import org.osgi.service.cdi.CdiEvent;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.CdiEventObserverQualifier;
 
 public class EventsTestCase extends AbstractTestCase {
@@ -33,8 +33,8 @@ public class EventsTestCase extends AbstractTestCase {
 		Object bcb = beanManager.getReference(bean, Object.class, ctx);
 		assertNotNull(bcb);
 		@SuppressWarnings("unchecked")
-		BeanThingy<List<CdiEvent>> bti = (BeanThingy<List<CdiEvent>>)bcb;
-		List<CdiEvent> list = bti.getThingy();
+		BeanService<List<CdiEvent>> bti = (BeanService<List<CdiEvent>>)bcb;
+		List<CdiEvent> list = bti.get();
 		assertNotNull(list);
 		assertEquals(3, list.size());
 	}

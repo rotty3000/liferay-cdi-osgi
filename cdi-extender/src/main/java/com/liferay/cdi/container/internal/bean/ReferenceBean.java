@@ -21,33 +21,53 @@ import static com.liferay.cdi.container.internal.util.Reflection.cast;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Decorator;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.injection.CurrentInjectionPoint;
+import org.jboss.weld.injection.EmptyInjectionPoint;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.util.Decorators;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceObjects;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.cdi.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.liferay.cdi.container.internal.container.ReferenceDependency;
+import com.liferay.cdi.container.internal.container.BindType;
 import com.liferay.cdi.container.internal.literal.AnyLiteral;
 import com.liferay.cdi.container.internal.literal.DefaultLiteral;
 import com.liferay.cdi.container.internal.util.Sets;
 
-@SuppressWarnings("rawtypes")
 public class ReferenceBean implements Bean<Object> {
 
-	public ReferenceBean(BeanManager manager, ReferenceDependency referenceDependency) {
-		_manager = ((BeanManagerProxy)manager).delegate();
-		_referenceDependency = referenceDependency;
-		_types = Sets.immutableHashSet(_referenceDependency.getInjectionPoint().getType(), Object.class);
-		_qualifiers = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE, _referenceDependency.getReference());
+	public ReferenceBean(
+		BeanManagerImpl beanManagerImpl, BundleContext bundleContext, Type injectionPointType, Class<?> beanClass,
+		BindType bindType, ServiceReference<?> serviceReference) {
+
+		_beanManagerImpl = beanManagerImpl;
+		_bundleContext = bundleContext;
+
+		_typesForMatchingBeansToInjectionPoints = Sets.immutableHashSet(injectionPointType, Object.class);
+		_beanClass = beanClass;
+		_bindType = bindType;
+		_serviceReference = serviceReference;
+
+		_currentInjectionPoint = _beanManagerImpl.getServices().get(CurrentInjectionPoint.class);
+		_qualifiers = Sets.hashSet(DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE);
+	}
+
+	public void addReference(Reference reference) {
+		_qualifiers.add(reference);
 	}
 
 	@Override
@@ -56,13 +76,29 @@ public class ReferenceBean implements Bean<Object> {
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void destroy(Object instance, CreationalContext creationalContext) {
-		_referenceDependency.ungetServiceImpl(instance);
+		if (_serviceObjects == null) {
+			return;
+		}
+
+		try {
+			_serviceObjects.ungetService(instance);
+		}
+		catch (Throwable t) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("CDIe - UngetService resulted in error", t);
+			}
+		}
 	}
 
 	@Override
 	public Class<?> getBeanClass() {
-		return _referenceDependency.getBeanClass();
+		return _beanClass;
+	}
+
+	public BindType getBindType() {
+		return _bindType;
 	}
 
 	@Override
@@ -92,7 +128,7 @@ public class ReferenceBean implements Bean<Object> {
 
 	@Override
 	public Set<Type> getTypes() {
-		return _types;
+		return _typesForMatchingBeansToInjectionPoints;
 	}
 
 	@Override
@@ -107,26 +143,61 @@ public class ReferenceBean implements Bean<Object> {
 
 	@Override
 	public String toString() {
-		return "ReferenceBean(" + _referenceDependency + ")";
+		return "ReferenceBean(" + _serviceReference + ")";
 	}
 
 	protected <T> T create0(CreationalContext<T> creationalContext) {
-		InjectionPoint ip = _referenceDependency.getInjectionPoint();
+		InjectionPoint ip = getInjectionPoint(_currentInjectionPoint);
 		List<Decorator<?>> decorators = getDecorators(ip);
-		T instance = cast(_referenceDependency.getServiceImpl());
+		T instance = cast(getServiceImpl());
 		if (decorators.isEmpty()) {
 			return instance;
 		}
-		return Decorators.getOuterDelegate(cast(this), instance, creationalContext, cast(getBeanClass()), ip, _manager, decorators);
+		return Decorators.getOuterDelegate(
+			cast(this), instance, creationalContext, cast(getBeanClass()), ip, _beanManagerImpl, decorators);
 	}
 
 	protected List<Decorator<?>> getDecorators(InjectionPoint ip) {
-		return _manager.resolveDecorators(Collections.singleton(ip.getType()), getQualifiers());
+		return _beanManagerImpl.resolveDecorators(Collections.singleton(ip.getType()), getQualifiers());
 	}
 
-	private final BeanManagerImpl _manager;
+	protected InjectionPoint getInjectionPoint(CurrentInjectionPoint currentInjectionPoint) {
+		InjectionPoint ip = currentInjectionPoint.peek();
+		return EmptyInjectionPoint.INSTANCE.equals(ip) ? null : ip;
+	}
+
+	protected Object getServiceImpl() {
+		if (ServiceReference.class.equals(_beanClass)) {
+			return _serviceReference;
+		}
+		else if (Map.class.equals(_beanClass)) {
+			Map<String, Object> properties = new HashMap<>();
+
+			for (String key : _serviceReference.getPropertyKeys()) {
+				properties.put(key, _serviceReference.getProperty(key));
+			}
+
+			return properties;
+		}
+
+		if (_serviceObjects == null) {
+			_serviceObjects = _bundleContext.getServiceObjects(_serviceReference);
+		}
+
+		return _serviceObjects.getService();
+	}
+
+	private static final Logger _log = LoggerFactory.getLogger(ReferenceBean.class);
+
+	private final Class<?> _beanClass;
+	private final BindType _bindType;
+	private final BundleContext _bundleContext;
+	private final CurrentInjectionPoint _currentInjectionPoint;
+	private final BeanManagerImpl _beanManagerImpl;
 	private final Set<Annotation> _qualifiers;
-	private final ReferenceDependency _referenceDependency;
-	private final Set<Type> _types;
+	@SuppressWarnings("rawtypes")
+	private volatile ServiceObjects _serviceObjects;
+	private final ServiceReference<?> _serviceReference;
+	private final Set<Type> _typesForMatchingBeansToInjectionPoints;
 
 }

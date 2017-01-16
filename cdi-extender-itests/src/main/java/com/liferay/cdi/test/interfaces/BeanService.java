@@ -1,9 +1,9 @@
 package com.liferay.cdi.test.interfaces;
 
-public interface BeanThingy<T> {
+public interface BeanService<T> {
 
 	public String doSomething();
 
-	public T getThingy();
+	public T get();
 
 }

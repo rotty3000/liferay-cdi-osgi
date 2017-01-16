@@ -18,71 +18,41 @@ package com.liferay.cdi.container.internal.container;
 
 import static com.liferay.cdi.container.internal.util.Reflection.cast;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.inject.Singleton;
 
-import org.osgi.framework.BundleContext;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.annotations.Reference;
 import org.osgi.service.cdi.annotations.ReferenceScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.liferay.cdi.container.internal.bean.ReferenceBean;
 
 public class ReferenceDependency {
 
-	static enum BindType {
-		SERVICE, SERVICE_PROPERTIES, SERVICE_REFERENCE
-	}
-
 	public ReferenceDependency(
-			Reference reference, BeanManager manager, InjectionPoint injectionPoint, BundleContext bundleContext)
+			BeanManagerImpl beanManagerImpl, Reference reference, InjectionPoint injectionPoint)
 		throws InvalidSyntaxException {
 
+		_beanManagerImpl = beanManagerImpl;
 		_reference = reference;
-		_manager = manager;
 		_injectionPoint = injectionPoint;
-		_bundleContext = bundleContext;
 
-		Class<? extends Annotation> scope = ApplicationScoped.class;
-
-		if (reference.scope() == ReferenceScope.PROTOTYPE) {
-			scope = Dependent.class;
-		}
-		else if (reference.scope() == ReferenceScope.SINGLETON) {
-			scope = Singleton.class;
-		}
-
-		_scope = scope;
 		_bindType = getBindType(_injectionPoint.getType());
-
 		_serviceClass = getServiceType();
 
 		_string = buildFilter(_serviceClass);
 		_filter = FrameworkUtil.createFilter(_string);
-	}
-
-	public void addBean(AfterBeanDiscovery abd) {
-		abd.addBean(new ReferenceBean(_manager, this));
 	}
 
 	public Class<?> getBeanClass() {
@@ -96,46 +66,42 @@ public class ReferenceDependency {
 		return _serviceClass;
 	}
 
+	public BindType getBindType() {
+		return _bindType;
+	}
+
 	public InjectionPoint getInjectionPoint() {
 		return _injectionPoint;
+	}
+
+	public BeanManagerImpl getManager() {
+		return _beanManagerImpl;
 	}
 
 	public Reference getReference() {
 		return _reference;
 	}
 
-	public Class<? extends Annotation> getScope() {
-		return _scope;
+	public Set<ServiceReference<?>> getMatchingReferences() {
+		return _matchingReferences;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Object getServiceImpl() {
-		if (_bindType == BindType.SERVICE_REFERENCE) {
-			return _serviceReference;
-		}
-		else if (_bindType == BindType.SERVICE_PROPERTIES) {
-			Map<String, Object> properties = new HashMap<>();
+	public Type getInjectionPointType() {
+		Type type = _injectionPoint.getType();
 
-			for (String key : _serviceReference.getPropertyKeys()) {
-				properties.put(key, _serviceReference.getProperty(key));
+		if ((type instanceof ParameterizedType)) {
+			ParameterizedType pType = (ParameterizedType)type;
+
+			if (Instance.class.isAssignableFrom(cast(pType.getRawType()))) {
+				type = pType.getActualTypeArguments()[0];
 			}
-
-			return properties;
 		}
 
-		if (_serviceObjects == null) {
-			_serviceObjects = _bundleContext.getServiceObjects(_serviceReference);
-		}
-
-		return _serviceObjects.getService();
-	}
-
-	public Set<Type> getTypes() {
-		return Collections.singleton(_injectionPoint.getType());
+		return type;
 	}
 
 	public boolean isResolved() {
-		return _serviceReference != null;
+		return !_matchingReferences.isEmpty();
 	}
 
 	public boolean matches(ServiceReference<?> reference) {
@@ -143,32 +109,16 @@ public class ReferenceDependency {
 	}
 
 	public void resolve(ServiceReference<?> reference) {
-		if (_log.isDebugEnabled()) {
-			_log.debug("CDIe - Binding {} to injection point {}", reference, _injectionPoint);
-		}
+		_matchingReferences.add(reference);
+	}
 
-		_serviceReference = reference;
+	public void unresolve(ServiceReference<?> reference) {
+		_matchingReferences.remove(reference);
 	}
 
 	@Override
 	public String toString() {
 		return _string;
-	}
-
-	@SuppressWarnings("unchecked")
-	public void ungetServiceImpl(Object service) {
-		if (_serviceObjects == null) {
-			return;
-		}
-
-		try {
-			_serviceObjects.ungetService(service);
-		}
-		catch (Throwable t) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("CDIe - UngetService resulted in error", t);
-			}
-		}
 	}
 
 	private String buildFilter(Class<?> serviceType) throws InvalidSyntaxException {
@@ -187,6 +137,8 @@ public class ReferenceDependency {
 		sb.append("=");
 		sb.append(serviceType.getName());
 		sb.append(")");
+
+		// TODO add Bundle scope?
 
 		if (_reference.scope() == ReferenceScope.PROTOTYPE) {
 			sb.append("(");
@@ -218,7 +170,12 @@ public class ReferenceDependency {
 
 			Type rawType = parameterizedType.getRawType();
 
-			if (Map.class.isAssignableFrom(cast(rawType))) {
+			if (Instance.class.isAssignableFrom(cast(rawType))) {
+				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+				return getBindType(actualTypeArguments[0]);
+			}
+			else if (Map.class.isAssignableFrom(cast(rawType))) {
 				Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
 
 				Type first = actualTypeArguments[0];
@@ -276,6 +233,21 @@ public class ReferenceDependency {
 
 		Type rawType = parameterizedType.getRawType();
 
+		if (Instance.class.isAssignableFrom(cast(rawType))) {
+			Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+			type = actualTypeArguments[0];
+
+			if (type instanceof ParameterizedType) {
+				parameterizedType = (ParameterizedType)type;
+
+				rawType = parameterizedType.getRawType();
+			}
+			else {
+				rawType = type;
+			}
+		}
+
 		if (!ServiceReference.class.isAssignableFrom(cast(rawType))) {
 			return cast(rawType);
 		}
@@ -293,19 +265,12 @@ public class ReferenceDependency {
 		return cast(first);
 	}
 
-	private static final Logger _log = LoggerFactory.getLogger(ReferenceDependency.class);
-
-	private final BeanManager _manager;
+	private final BeanManagerImpl _beanManagerImpl;
 	private final BindType _bindType;
-	private final BundleContext _bundleContext;
 	private final Filter _filter;
 	private final InjectionPoint _injectionPoint;
 	private final Reference _reference;
-	private final Class<? extends Annotation> _scope;
-	@SuppressWarnings("rawtypes")
-	private volatile ServiceObjects _serviceObjects;
-	@SuppressWarnings("rawtypes")
-	private volatile ServiceReference _serviceReference;
+	private final Set<ServiceReference<?>> _matchingReferences = new ConcurrentSkipListSet<>(Comparator.reverseOrder());
 	private final Class<?> _serviceClass;
 	private final String _string;
 

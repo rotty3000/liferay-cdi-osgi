@@ -8,12 +8,12 @@ import javax.inject.Singleton;
 
 import org.osgi.service.cdi.CdiEvent;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.CdiEventObserverQualifier;
 
-@Singleton
 @CdiEventObserverQualifier
-public class CdiEventObserver implements BeanThingy<List<CdiEvent>> {
+@Singleton
+public class CdiEventObserver implements BeanService<List<CdiEvent>> {
 
 	@Override
 	public String doSomething() {
@@ -21,7 +21,7 @@ public class CdiEventObserver implements BeanThingy<List<CdiEvent>> {
 	}
 
 	@Override
-	public List<CdiEvent> getThingy() {
+	public List<CdiEvent> get() {
 		return events;
 	}
 

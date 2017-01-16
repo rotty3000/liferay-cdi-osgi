@@ -2,6 +2,7 @@ package com.liferay.cdi.test.cases;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -12,9 +13,10 @@ import javax.enterprise.util.AnnotationLiteral;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.BundleContextBeanQualifier;
 import com.liferay.cdi.test.interfaces.FieldInjectedReference;
+import com.liferay.cdi.test.interfaces.SingletonScoped;
 
 @SuppressWarnings("rawtypes")
 public class CdiBeanTests extends AbstractTestCase {
@@ -26,16 +28,16 @@ public class CdiBeanTests extends AbstractTestCase {
 	}
 
 	public void testConstructorInjectedService() throws Exception {
-		Iterator<ServiceReference<BeanThingy>> iterator = bundleContext.getServiceReferences(
-			BeanThingy.class, String.format("(objectClass=*.%s)","ConstructorInjectedService")).iterator();
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","ConstructorInjectedService")).iterator();
 
 		assertTrue(iterator.hasNext());
 
-		ServiceReference<BeanThingy> serviceReference = iterator.next();
+		ServiceReference<BeanService> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
 
-		BeanThingy bean = bundleContext.getService(serviceReference);
+		BeanService bean = bundleContext.getService(serviceReference);
 
 		assertNotNull(bean);
 		assertEquals("PREFIXCONSTRUCTOR", bean.doSomething());
@@ -50,6 +52,7 @@ public class CdiBeanTests extends AbstractTestCase {
 		ServiceReference<FieldInjectedReference> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
+		assertNotNull(serviceReference.getBundle());
 
 		FieldInjectedReference fieldInjectedReference = bundleContext.getService(serviceReference);
 
@@ -72,6 +75,7 @@ public class CdiBeanTests extends AbstractTestCase {
 		ServiceReference<FieldInjectedReference> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
+		assertNotNull(serviceReference.getBundle());
 
 		FieldInjectedReference fieldInjectedReference = bundleContext.getService(serviceReference);
 
@@ -86,48 +90,49 @@ public class CdiBeanTests extends AbstractTestCase {
 	}
 
 	public void testFieldInjectedService() throws Exception {
-		Iterator<ServiceReference<BeanThingy>> iterator = bundleContext.getServiceReferences(
-			BeanThingy.class, String.format("(objectClass=*.%s)","FieldInjectedService")).iterator();
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","FieldInjectedService")).iterator();
 
 		assertTrue(iterator.hasNext());
 
-		ServiceReference<BeanThingy> serviceReference = iterator.next();
+		ServiceReference<BeanService> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
 
-		BeanThingy bean = bundleContext.getService(serviceReference);
+		BeanService bean = bundleContext.getService(serviceReference);
 
 		assertNotNull(bean);
 		assertEquals("PREFIXFIELD", bean.doSomething());
 	}
 
 	public void testMethodInjectedService() throws Exception {
-		Iterator<ServiceReference<BeanThingy>> iterator = bundleContext.getServiceReferences(
-			BeanThingy.class, String.format("(objectClass=*.%s)","MethodInjectedService")).iterator();
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","MethodInjectedService")).iterator();
 
 		assertTrue(iterator.hasNext());
 
-		ServiceReference<BeanThingy> serviceReference = iterator.next();
+		ServiceReference<BeanService> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
 
-		BeanThingy bean = bundleContext.getService(serviceReference);
+		BeanService bean = bundleContext.getService(serviceReference);
 
 		assertNotNull(bean);
 		assertEquals("PREFIXMETHOD", bean.doSomething());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void testBeanAsServiceWithProperties() throws Exception {
-		Iterator<ServiceReference<BeanThingy>> iterator = bundleContext.getServiceReferences(
-			BeanThingy.class, String.format("(objectClass=*.%s)","ServiceWithProperties")).iterator();
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","ServiceWithProperties")).iterator();
 
 		assertTrue(iterator.hasNext());
 
-		ServiceReference<BeanThingy> serviceReference = iterator.next();
+		ServiceReference<BeanService> serviceReference = iterator.next();
 
 		assertNotNull(serviceReference);
 
-		BeanThingy bean = bundleContext.getService(serviceReference);
+		BeanService bean = bundleContext.getService(serviceReference);
 
 		assertNotNull(bean);
 
@@ -218,9 +223,87 @@ public class CdiBeanTests extends AbstractTestCase {
 		Object bcb = beanManager.getReference(bean, Object.class, ctx);
 		assertNotNull(bcb);
 		@SuppressWarnings("unchecked")
-		BeanThingy<BundleContext> bti = (BeanThingy<BundleContext>)bcb;
-		assertNotNull(bti.getThingy());
-		assertTrue(bti.getThingy() instanceof BundleContext);
+		BeanService<BundleContext> bti = (BeanService<BundleContext>)bcb;
+		assertNotNull(bti.get());
+		assertTrue(bti.get() instanceof BundleContext);
+	}
+
+	public void testInstance() throws Exception {
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","InstanceBean")).iterator();
+
+		assertTrue(iterator.hasNext());
+
+		ServiceReference<BeanService> serviceReference = iterator.next();
+
+		assertNotNull(serviceReference);
+
+		@SuppressWarnings("unchecked")
+		BeanService<SingletonScoped<?>> bean = bundleContext.getService(serviceReference);
+
+		assertNotNull(bean);
+		assertEquals(3, Integer.decode(bean.doSomething()).intValue());
+		SingletonScoped<?> singletonScoped = bean.get();
+		assertNotNull(singletonScoped);
+	}
+
+	public void testInstanceProperties() throws Exception {
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","InstancePropertiesBean")).iterator();
+
+		assertTrue(iterator.hasNext());
+
+		ServiceReference<BeanService> serviceReference = iterator.next();
+
+		assertNotNull(serviceReference);
+
+		@SuppressWarnings("unchecked")
+		BeanService<Map<String, Object>> bean = bundleContext.getService(serviceReference);
+
+		assertNotNull(bean);
+		assertEquals(3, Integer.decode(bean.doSomething()).intValue());
+		Map<String, Object> map = bean.get();
+		assertNotNull(map);
+	}
+
+	public void testInstanceServiceReference() throws Exception {
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","InstanceServiceReferenceBean")).iterator();
+
+		assertTrue(iterator.hasNext());
+
+		ServiceReference<BeanService> serviceReference = iterator.next();
+
+		assertNotNull(serviceReference);
+
+		@SuppressWarnings("unchecked")
+		BeanService<ServiceReference<?>> bean = bundleContext.getService(serviceReference);
+
+		assertNotNull(bean);
+		assertEquals(3, Integer.decode(bean.doSomething()).intValue());
+		ServiceReference<?> sr = bean.get();
+		assertNotNull(sr);
+	}
+
+	public void testInstanceOrdering() throws Exception {
+		Iterator<ServiceReference<BeanService>> iterator = bundleContext.getServiceReferences(
+			BeanService.class, String.format("(objectClass=*.%s)","InstanceOrderBean")).iterator();
+
+		assertTrue(iterator.hasNext());
+
+		ServiceReference<BeanService> serviceReference = iterator.next();
+
+		assertNotNull(serviceReference);
+
+		@SuppressWarnings("unchecked")
+		BeanService<List<ServiceReference<?>>> bean = bundleContext.getService(serviceReference);
+
+		assertNotNull(bean);
+		assertEquals(3, Integer.decode(bean.doSomething()).intValue());
+		List<ServiceReference<?>> sl = bean.get();
+		assertNotNull(sl);
+//		assertEquals(1, sl.get(0).compareTo(sl.get(1)));
+//		assertEquals(1, sl.get(1).compareTo(sl.get(2)));
 	}
 
 }

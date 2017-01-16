@@ -1,14 +1,16 @@
 package com.liferay.cdi.test.beans;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.osgi.service.cdi.annotations.Service;
 
-import com.liferay.cdi.test.interfaces.BeanThingy;
+import com.liferay.cdi.test.interfaces.BeanService;
 import com.liferay.cdi.test.interfaces.Pojo;
 
-@Service(type = {ConstructorInjectedService.class, BeanThingy.class})
-public class ConstructorInjectedService implements BeanThingy<Pojo> {
+@Service(type = {ConstructorInjectedService.class, BeanService.class})
+@Singleton
+public class ConstructorInjectedService implements BeanService<Pojo> {
 
 	@Inject
 	public ConstructorInjectedService(PojoImpl pojo) {
@@ -21,7 +23,7 @@ public class ConstructorInjectedService implements BeanThingy<Pojo> {
 	}
 
 	@Override
-	public Pojo getThingy() {
+	public Pojo get() {
 		return _pojo;
 	}
 

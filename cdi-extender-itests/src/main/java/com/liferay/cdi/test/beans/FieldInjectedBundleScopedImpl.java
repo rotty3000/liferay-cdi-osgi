@@ -4,8 +4,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cdi.annotations.Reference;
@@ -15,8 +15,8 @@ import org.osgi.service.cdi.annotations.Service;
 import com.liferay.cdi.test.interfaces.BundleScoped;
 import com.liferay.cdi.test.interfaces.FieldInjectedReference;
 
-@ApplicationScoped
 @Service(type = {FieldInjectedBundleScopedImpl.class, FieldInjectedReference.class})
+@Singleton
 public class FieldInjectedBundleScopedImpl implements FieldInjectedReference<BundleScoped> {
 
 	@Inject

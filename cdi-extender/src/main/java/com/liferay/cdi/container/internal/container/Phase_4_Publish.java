@@ -17,27 +17,35 @@
 package com.liferay.cdi.container.internal.container;
 
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.weld.bootstrap.api.Bootstrap;
-import org.osgi.framework.Bundle;
+import org.jboss.weld.manager.BeanManagerImpl;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cdi.CdiEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.liferay.cdi.container.internal.bean.ReferenceBean;
+
 public class Phase_4_Publish {
 
-	public Phase_4_Publish(Bundle bundle, CdiContainerState cdiContainerState, List<ServiceDeclaration> services) {
-		_bundle = bundle;
-		_cdiContainerState = cdiContainerState;
-		_services = services;
-		_bundleContext = _bundle.getBundleContext();
+	public Phase_4_Publish(
+		Phase_3_Reference referencePhase, Bootstrap bootstrap) {
+
+		_referencePhase = referencePhase;
+		_bootstrap = bootstrap;
+		_bundleContext = _referencePhase._bundle.getBundleContext();
 	}
 
 	public void close() {
@@ -79,28 +87,68 @@ public class Phase_4_Publish {
 		_bootstrap.shutdown();
 	}
 
-	public void open(Bootstrap bootstrap) {
-		_cdiContainerState.fire(CdiEvent.State.SATISFIED);
+	public void open() {
+		_referencePhase._cdiContainerState.fire(CdiEvent.State.SATISFIED);
 
-		_bootstrap = bootstrap;
+		Map<ServiceReference<?>, Set<ReferenceBean>> beans = new HashMap<>();
+
+		for (ReferenceDependency referenceDependency : _referencePhase._referenceDependencies) {
+			for (ServiceReference<?> matchingReference : referenceDependency.getMatchingReferences()) {
+				Set<ReferenceBean> set = beans.get(matchingReference);
+
+				if (set == null) {
+					set = new HashSet<>();
+
+					beans.put(matchingReference, set);
+				}
+
+				ReferenceBean existingBean = null;
+
+				for (ReferenceBean bean : set) {
+					if (bean.getBindType() == referenceDependency.getBindType() &&
+						bean.getBeanClass().equals(referenceDependency.getBeanClass()) &&
+						bean.getTypes().contains(referenceDependency.getInjectionPointType())) {
+
+						existingBean = bean;
+					}
+				}
+
+				if (existingBean != null) {
+					existingBean.addReference(referenceDependency.getReference());
+				}
+				else {
+					BeanManagerImpl beanManagerImpl = referenceDependency.getManager();
+
+					ReferenceBean bean = new ReferenceBean(
+						beanManagerImpl, _bundleContext, referenceDependency.getInjectionPointType(),
+						referenceDependency.getBeanClass(), referenceDependency.getBindType(), matchingReference);
+
+					bean.addReference(referenceDependency.getReference());
+
+					set.add(bean);
+
+					beanManagerImpl.addBean(bean);
+				}
+			}
+		}
 
 		_bootstrap.validateBeans();
 		_bootstrap.endInitialization();
 
 		processServiceDeclarations();
 
-		BeanManager beanManager = _cdiContainerState.getBeanManager();
+		BeanManager beanManager = _referencePhase._cdiContainerState.getBeanManager();
 
-		_beanManagerRegistration = _bundle.getBundleContext().registerService(
+		_beanManagerRegistration = _bundleContext.registerService(
 			BeanManager.class, beanManager, null);
 
-		_cdiContainerState.fire(CdiEvent.State.CREATED);
+		_referencePhase._cdiContainerState.fire(CdiEvent.State.CREATED);
 	}
 
 	private void processServiceDeclarations() {
 		// TODO check for beans to be published as services explicitly defined through the requirement
 
-		for (ServiceDeclaration serviceDeclaration : _services) {
+		for (ServiceDeclaration serviceDeclaration : _referencePhase._services) {
 			processServiceDeclaration(serviceDeclaration);
 		}
 	}
@@ -120,11 +168,9 @@ public class Phase_4_Publish {
 
 	private static final Logger _log = LoggerFactory.getLogger(Phase_4_Publish.class);
 
-	private Bootstrap _bootstrap;
-	private final Bundle _bundle;
+	private final Bootstrap _bootstrap;
 	private final BundleContext _bundleContext;
-	private final CdiContainerState _cdiContainerState;
-	private final List<ServiceDeclaration> _services;
+	private final Phase_3_Reference _referencePhase;
 	private final List<ServiceRegistration<?>> _registrations = new CopyOnWriteArrayList<>();
 
 	private ServiceRegistration<BeanManager> _beanManagerRegistration;
